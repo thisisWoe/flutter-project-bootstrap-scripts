@@ -7,7 +7,7 @@ Dio provideDio({
 }) {
   final baseUrl = appConfig?.baseUrl ?? '';
   final options = BaseOptions(
-    baseUrl: baseUrl.isEmpty ? '/api' : '$baseUrl/api',
+    baseUrl: baseUrl.isEmpty ? 'http://localhost:8080/api' : '$baseUrl/api',
     headers: {'Accept': 'application/json'},
     contentType: Headers.jsonContentType,
     connectTimeout: const Duration(milliseconds: 130000),

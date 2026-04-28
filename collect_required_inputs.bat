@@ -358,6 +358,7 @@ mkdir "!repo_root!\lib\core\bindings" >nul 2>nul
 mkdir "!repo_root!\lib\core\config" >nul 2>nul
 mkdir "!repo_root!\lib\core\network" >nul 2>nul
 mkdir "!repo_root!\lib\core\routing" >nul 2>nul
+mkdir "!repo_root!\lib\core\routing\guards" >nul 2>nul
 mkdir "!repo_root!\lib\core\styles" >nul 2>nul
 mkdir "!repo_root!\lib\core\utils" >nul 2>nul
 mkdir "!repo_root!\lib\core\view\controllers" >nul 2>nul
@@ -367,7 +368,119 @@ mkdir "!repo_root!\lib\core\view\domain\use_cases" >nul 2>nul
 mkdir "!repo_root!\lib\core\view\widgets" >nul 2>nul
 mkdir "!repo_root!\lib\l10n" >nul 2>nul
 
-for %%F in (onboarding home profile) do (
+mkdir "!repo_root!\lib\features\onboarding\data\models" >nul 2>nul
+mkdir "!repo_root!\lib\features\onboarding\data\repo_impl" >nul 2>nul
+mkdir "!repo_root!\lib\features\onboarding\domain\entities" >nul 2>nul
+mkdir "!repo_root!\lib\features\onboarding\domain\repositories" >nul 2>nul
+mkdir "!repo_root!\lib\features\onboarding\domain\use_cases" >nul 2>nul
+mkdir "!repo_root!\lib\features\onboarding\view\bindings" >nul 2>nul
+mkdir "!repo_root!\lib\features\onboarding\view\controllers" >nul 2>nul
+mkdir "!repo_root!\lib\features\onboarding\view\pages" >nul 2>nul
+mkdir "!repo_root!\lib\features\onboarding\view\widgets" >nul 2>nul
+
+set "file=!repo_root!\lib\features\onboarding\domain\repositories\onboarding_repository.dart"
+> "!file!" echo abstract interface class OnboardingRepository {
+>> "!file!" echo   Future^<bool^> getOnboardingState();
+>> "!file!" echo   Future^<void^> setOnboardingState(bool accepted);
+>> "!file!" echo }
+
+set "file=!repo_root!\lib\features\onboarding\domain\use_cases\get_onboarding_state.dart"
+> "!file!" echo import 'package:!flutter_project_name!/features/onboarding/domain/repositories/onboarding_repository.dart';
+>> "!file!" echo class GetOnboardingStateUseCase {
+>> "!file!" echo   const GetOnboardingStateUseCase(this._repository);
+>> "!file!" echo   final OnboardingRepository _repository;
+>> "!file!" echo   Future^<bool^> call() =^> _repository.getOnboardingState();
+>> "!file!" echo }
+
+set "file=!repo_root!\lib\features\onboarding\domain\use_cases\set_onboarding_state.dart"
+> "!file!" echo import 'package:!flutter_project_name!/features/onboarding/domain/repositories/onboarding_repository.dart';
+>> "!file!" echo class SetOnboardingStateUseCase {
+>> "!file!" echo   const SetOnboardingStateUseCase(this._repository);
+>> "!file!" echo   final OnboardingRepository _repository;
+>> "!file!" echo   Future^<void^> call(bool accepted) =^> _repository.setOnboardingState(accepted);
+>> "!file!" echo }
+
+set "file=!repo_root!\lib\features\onboarding\data\repo_impl\onboarding_repository_shared_prefs_impl.dart"
+> "!file!" echo import 'package:shared_preferences/shared_preferences.dart';
+>> "!file!" echo import 'package:!flutter_project_name!/core/utils/app_key_store.dart';
+>> "!file!" echo import 'package:!flutter_project_name!/features/onboarding/domain/repositories/onboarding_repository.dart';
+>> "!file!" echo class OnboardingRepositorySharedPrefsImpl implements OnboardingRepository {
+>> "!file!" echo   const OnboardingRepositorySharedPrefsImpl(this._preferences);
+>> "!file!" echo   final SharedPreferences _preferences;
+>> "!file!" echo   @override
+>> "!file!" echo   Future^<bool^> getOnboardingState() async =^> _preferences.getBool(AppKeyStore.onboardingAccepted) ?? false;
+>> "!file!" echo   @override
+>> "!file!" echo   Future^<void^> setOnboardingState(bool accepted) async { await _preferences.setBool(AppKeyStore.onboardingAccepted, accepted); }
+>> "!file!" echo }
+
+set "file=!repo_root!\lib\features\onboarding\view\controllers\onboarding_controller.dart"
+> "!file!" echo import 'package:get/get.dart';
+>> "!file!" echo import 'package:!flutter_project_name!/features/onboarding/domain/use_cases/get_onboarding_state.dart';
+>> "!file!" echo import 'package:!flutter_project_name!/features/onboarding/domain/use_cases/set_onboarding_state.dart';
+>> "!file!" echo class OnboardingController extends GetxController {
+>> "!file!" echo   OnboardingController({required GetOnboardingStateUseCase getOnboardingState, required SetOnboardingStateUseCase setOnboardingState}) : _getOnboardingState = getOnboardingState, _setOnboardingState = setOnboardingState;
+>> "!file!" echo   final GetOnboardingStateUseCase _getOnboardingState;
+>> "!file!" echo   final SetOnboardingStateUseCase _setOnboardingState;
+>> "!file!" echo   final title = 'Onboarding'.obs;
+>> "!file!" echo   final isAccepted = false.obs;
+>> "!file!" echo   final isLoading = true.obs;
+>> "!file!" echo   @override
+>> "!file!" echo   void onInit() { super.onInit(); _loadOnboardingState(); }
+>> "!file!" echo   Future^<void^> _loadOnboardingState() async { isAccepted.value = await _getOnboardingState(); isLoading.value = false; }
+>> "!file!" echo   Future^<void^> setAccepted(bool value) async { isAccepted.value = value; await _setOnboardingState(value); }
+>> "!file!" echo }
+
+set "file=!repo_root!\lib\features\onboarding\view\bindings\onboarding_bindings.dart"
+> "!file!" echo import 'package:get/get.dart';
+>> "!file!" echo import 'package:!flutter_project_name!/features/onboarding/domain/use_cases/get_onboarding_state.dart';
+>> "!file!" echo import 'package:!flutter_project_name!/features/onboarding/domain/use_cases/set_onboarding_state.dart';
+>> "!file!" echo import 'package:!flutter_project_name!/features/onboarding/view/controllers/onboarding_controller.dart';
+>> "!file!" echo class OnboardingBindings implements Bindings {
+>> "!file!" echo   const OnboardingBindings();
+>> "!file!" echo   @override
+>> "!file!" echo   void dependencies() {
+>> "!file!" echo     if (Get.isRegistered^<OnboardingController^>() == false) Get.lazyPut^<OnboardingController^>(() =^> OnboardingController(getOnboardingState: Get.find^<GetOnboardingStateUseCase^>(), setOnboardingState: Get.find^<SetOnboardingStateUseCase^>()));
+>> "!file!" echo   }
+>> "!file!" echo }
+
+set "file=!repo_root!\lib\features\onboarding\view\pages\onboarding_page.dart"
+> "!file!" echo import 'package:flutter/material.dart';
+>> "!file!" echo import 'package:get/get.dart';
+>> "!file!" echo import 'package:go_router/go_router.dart';
+>> "!file!" echo import 'package:!flutter_project_name!/core/routing/app_route.dart';
+>> "!file!" echo import 'package:!flutter_project_name!/features/onboarding/view/controllers/onboarding_controller.dart';
+>> "!file!" echo class OnboardingPage extends StatelessWidget {
+>> "!file!" echo   const OnboardingPage({super.key});
+>> "!file!" echo   @override
+>> "!file!" echo   Widget build(BuildContext context) {
+>> "!file!" echo     final controller = Get.find^<OnboardingController^>();
+>> "!file!" echo     return Scaffold(
+>> "!file!" echo       appBar: AppBar(title: Text(controller.title.value)),
+>> "!file!" echo       body: SafeArea(
+>> "!file!" echo         child: Padding(
+>> "!file!" echo           padding: const EdgeInsets.all(24),
+>> "!file!" echo           child: Obx(() {
+>> "!file!" echo             if (controller.isLoading.value) return const Center(child: CircularProgressIndicator());
+>> "!file!" echo             return Column(
+>> "!file!" echo               crossAxisAlignment: CrossAxisAlignment.start,
+>> "!file!" echo               children: [
+>> "!file!" echo                 Text('Prima di continuare devi accettare l\'onboarding.', style: Theme.of(context).textTheme.headlineSmall),
+>> "!file!" echo                 const SizedBox(height: 12),
+>> "!file!" echo                 Text('Conferma di aver letto e accettato per sbloccare il pulsante di accesso alla home.', style: Theme.of(context).textTheme.bodyLarge),
+>> "!file!" echo                 const Spacer(),
+>> "!file!" echo                 CheckboxListTile(contentPadding: EdgeInsets.zero, controlAffinity: ListTileControlAffinity.leading, title: const Text('Accetto e voglio proseguire'), value: controller.isAccepted.value, onChanged: (value) =^> controller.setAccepted(value ?? false)),
+>> "!file!" echo                 const SizedBox(height: 16),
+>> "!file!" echo                 SizedBox(width: double.infinity, child: ElevatedButton(onPressed: controller.isAccepted.value ? () =^> context.go(AppRoute.home.path) : null, child: const Text('Continua'))),
+>> "!file!" echo               ],
+>> "!file!" echo             );
+>> "!file!" echo           }),
+>> "!file!" echo         ),
+>> "!file!" echo       ),
+>> "!file!" echo     );
+>> "!file!" echo   }
+>> "!file!" echo }
+
+for %%F in (home profile) do (
   mkdir "!repo_root!\lib\features\%%F\data\models" >nul 2>nul
   mkdir "!repo_root!\lib\features\%%F\data\repo_impl" >nul 2>nul
   mkdir "!repo_root!\lib\features\%%F\domain\entities" >nul 2>nul
@@ -425,7 +538,7 @@ set "file=!repo_root!\lib\core\network\dio.dart"
 >> "!file!" echo }) {
 >> "!file!" echo   final baseUrl = appConfig?.baseUrl ?? '';
 >> "!file!" echo   final options = BaseOptions(
->> "!file!" echo     baseUrl: baseUrl.isEmpty ? '/api' : '$baseUrl/api',
+>> "!file!" echo     baseUrl: baseUrl.isEmpty ? 'http://localhost:8080/api' : '$baseUrl/api',
 >> "!file!" echo     headers: {'Accept': 'application/json'},
 >> "!file!" echo     contentType: Headers.jsonContentType,
 >> "!file!" echo     connectTimeout: const Duration(milliseconds: 130000),
@@ -455,6 +568,10 @@ set "file=!repo_root!\lib\core\bindings\core_bindings.dart"
 >> "!file!" echo import 'package:!flutter_project_name!/core/view/domain/repositories/theme_repository.dart';
 >> "!file!" echo import 'package:!flutter_project_name!/core/view/domain/use_cases/get_theme_mode.dart';
 >> "!file!" echo import 'package:!flutter_project_name!/core/view/domain/use_cases/set_theme_mode.dart';
+>> "!file!" echo import 'package:!flutter_project_name!/features/onboarding/data/repo_impl/onboarding_repository_shared_prefs_impl.dart';
+>> "!file!" echo import 'package:!flutter_project_name!/features/onboarding/domain/repositories/onboarding_repository.dart';
+>> "!file!" echo import 'package:!flutter_project_name!/features/onboarding/domain/use_cases/get_onboarding_state.dart';
+>> "!file!" echo import 'package:!flutter_project_name!/features/onboarding/domain/use_cases/set_onboarding_state.dart';
 >> "!file!" echo import 'package:!flutter_project_name!/core/network/dio.dart';
 >> "!file!" echo.
 >> "!file!" echo class CoreBindings implements Bindings {
@@ -469,6 +586,9 @@ set "file=!repo_root!\lib\core\bindings\core_bindings.dart"
 >> "!file!" echo     Get.put^<ThemeRepository^>(ThemeRepositorySharedPrefsImpl(preferences), permanent: true);
 >> "!file!" echo     Get.put^<GetThemeModeUseCase^>(GetThemeModeUseCase(Get.find^<ThemeRepository^>()), permanent: true);
 >> "!file!" echo     Get.put^<SetThemeModeUseCase^>(SetThemeModeUseCase(Get.find^<ThemeRepository^>()), permanent: true);
+>> "!file!" echo     Get.put^<OnboardingRepository^>(OnboardingRepositorySharedPrefsImpl(preferences), permanent: true);
+>> "!file!" echo     Get.put^<GetOnboardingStateUseCase^>(GetOnboardingStateUseCase(Get.find^<OnboardingRepository^>()), permanent: true);
+>> "!file!" echo     Get.put^<SetOnboardingStateUseCase^>(SetOnboardingStateUseCase(Get.find^<OnboardingRepository^>()), permanent: true);
 >> "!file!" echo     Get.put^<ThemeController^>(ThemeController(getThemeMode: Get.find^<GetThemeModeUseCase^>(), setThemeModeUseCase: Get.find^<SetThemeModeUseCase^>()), permanent: true);
 >> "!file!" echo     final router = config.routerShape == 'shell' ? shell_routes.buildShellRouter() : root_routes.buildRootRouter();
 >> "!file!" echo     Get.put^<GoRouter^>(router, permanent: true);
@@ -524,16 +644,29 @@ set "file=!repo_root!\lib\core\routing\routes.dart"
 > "!file!" echo import 'package:flutter/material.dart';
 >> "!file!" echo import 'package:go_router/go_router.dart';
 >> "!file!" echo import 'package:!flutter_project_name!/core/routing/app_route.dart';
+>> "!file!" echo import 'package:!flutter_project_name!/core/routing/guards/onboarding_redirect.dart';
 >> "!file!" echo import 'package:!flutter_project_name!/core/routing/go_router_observer.dart';
+>> "!file!" echo import 'package:!flutter_project_name!/features/home/view/bindings/home_bindings.dart';
 >> "!file!" echo import 'package:!flutter_project_name!/features/home/view/pages/home_page.dart';
+>> "!file!" echo import 'package:!flutter_project_name!/features/onboarding/view/bindings/onboarding_bindings.dart';
 >> "!file!" echo import 'package:!flutter_project_name!/features/onboarding/view/pages/onboarding_page.dart';
+>> "!file!" echo import 'package:!flutter_project_name!/features/profile/view/bindings/profile_bindings.dart';
 >> "!file!" echo import 'package:!flutter_project_name!/features/profile/view/pages/profile_page.dart';
 >> "!file!" echo final rootNavigatorKey = GlobalKey^<NavigatorState^>();
 >> "!file!" echo GoRouter buildRootRouter() {
->> "!file!" echo   return GoRouter(navigatorKey: rootNavigatorKey, initialLocation: AppRoute.onboarding.path, observers: [GoRouterObserver()], routes: [
->> "!file!" echo     GoRoute(path: AppRoute.onboarding.path, name: AppRoute.onboarding.name, pageBuilder: (context, state) =^> const MaterialPage(child: OnboardingPage())),
->> "!file!" echo     GoRoute(path: AppRoute.home.path, name: AppRoute.home.name, pageBuilder: (context, state) =^> const MaterialPage(child: HomePage())),
->> "!file!" echo     GoRoute(path: AppRoute.profile.path, name: AppRoute.profile.name, pageBuilder: (context, state) =^> const MaterialPage(child: ProfilePage())),
+>> "!file!" echo   return GoRouter(navigatorKey: rootNavigatorKey, initialLocation: AppRoute.onboarding.path, observers: [GoRouterObserver()], redirect: redirectOnboardingGuard, routes: [
+>> "!file!" echo     GoRoute(path: AppRoute.onboarding.path, name: AppRoute.onboarding.name, pageBuilder: (context, state) {
+>> "!file!" echo       const OnboardingBindings().dependencies();
+>> "!file!" echo       return const MaterialPage(child: OnboardingPage());
+>> "!file!" echo     }),
+>> "!file!" echo     GoRoute(path: AppRoute.home.path, name: AppRoute.home.name, pageBuilder: (context, state) {
+>> "!file!" echo       const HomeBindings().dependencies();
+>> "!file!" echo       return const MaterialPage(child: HomePage());
+>> "!file!" echo     }),
+>> "!file!" echo     GoRoute(path: AppRoute.profile.path, name: AppRoute.profile.name, pageBuilder: (context, state) {
+>> "!file!" echo       const ProfileBindings().dependencies();
+>> "!file!" echo       return const MaterialPage(child: ProfilePage());
+>> "!file!" echo     }),
 >> "!file!" echo   ]);
 >> "!file!" echo }
 
@@ -541,18 +674,31 @@ set "file=!repo_root!\lib\core\routing\shell_routes.dart"
 > "!file!" echo import 'package:flutter/material.dart';
 >> "!file!" echo import 'package:go_router/go_router.dart';
 >> "!file!" echo import 'package:!flutter_project_name!/core/routing/app_route.dart';
+>> "!file!" echo import 'package:!flutter_project_name!/core/routing/guards/onboarding_redirect.dart';
 >> "!file!" echo import 'package:!flutter_project_name!/core/routing/go_router_observer.dart';
 >> "!file!" echo import 'package:!flutter_project_name!/core/view/widgets/app_shell.dart';
+>> "!file!" echo import 'package:!flutter_project_name!/features/home/view/bindings/home_bindings.dart';
 >> "!file!" echo import 'package:!flutter_project_name!/features/home/view/pages/home_page.dart';
+>> "!file!" echo import 'package:!flutter_project_name!/features/onboarding/view/bindings/onboarding_bindings.dart';
 >> "!file!" echo import 'package:!flutter_project_name!/features/onboarding/view/pages/onboarding_page.dart';
+>> "!file!" echo import 'package:!flutter_project_name!/features/profile/view/bindings/profile_bindings.dart';
 >> "!file!" echo import 'package:!flutter_project_name!/features/profile/view/pages/profile_page.dart';
 >> "!file!" echo final rootNavigatorKey = GlobalKey^<NavigatorState^>();
 >> "!file!" echo GoRouter buildShellRouter() {
->> "!file!" echo   return GoRouter(navigatorKey: rootNavigatorKey, initialLocation: AppRoute.onboarding.path, observers: [GoRouterObserver()], routes: [
->> "!file!" echo     GoRoute(path: AppRoute.onboarding.path, name: AppRoute.onboarding.name, pageBuilder: (context, state) =^> const MaterialPage(child: OnboardingPage())),
+>> "!file!" echo   return GoRouter(navigatorKey: rootNavigatorKey, initialLocation: AppRoute.onboarding.path, observers: [GoRouterObserver()], redirect: redirectOnboardingGuard, routes: [
+>> "!file!" echo     GoRoute(path: AppRoute.onboarding.path, name: AppRoute.onboarding.name, pageBuilder: (context, state) {
+>> "!file!" echo       const OnboardingBindings().dependencies();
+>> "!file!" echo       return const MaterialPage(child: OnboardingPage());
+>> "!file!" echo     }),
 >> "!file!" echo     StatefulShellRoute.indexedStack(builder: (context, state, navigationShell) =^> AppShell(navigationShell: navigationShell), branches: [
->> "!file!" echo       StatefulShellBranch(routes: [GoRoute(path: AppRoute.home.path, name: AppRoute.home.name, pageBuilder: (context, state) =^> const MaterialPage(child: HomePage()))]),
->> "!file!" echo       StatefulShellBranch(routes: [GoRoute(path: AppRoute.profile.path, name: AppRoute.profile.name, pageBuilder: (context, state) =^> const MaterialPage(child: ProfilePage()))]),
+>> "!file!" echo       StatefulShellBranch(routes: [GoRoute(path: AppRoute.home.path, name: AppRoute.home.name, pageBuilder: (context, state) {
+>> "!file!" echo         const HomeBindings().dependencies();
+>> "!file!" echo         return const MaterialPage(child: HomePage());
+>> "!file!" echo       })]),
+>> "!file!" echo       StatefulShellBranch(routes: [GoRoute(path: AppRoute.profile.path, name: AppRoute.profile.name, pageBuilder: (context, state) {
+>> "!file!" echo         const ProfileBindings().dependencies();
+>> "!file!" echo         return const MaterialPage(child: ProfilePage());
+>> "!file!" echo       })]),
 >> "!file!" echo     ]),
 >> "!file!" echo   ]);
 >> "!file!" echo }
@@ -572,7 +718,7 @@ set "file=!repo_root!\lib\core\view\widgets\app_shell.dart"
 >> "!file!" echo   }
 >> "!file!" echo }
 
-for %%F in (onboarding home profile) do (
+for %%F in (home profile) do (
   call :pascal_case "%%F" feature_class
   set "file=!repo_root!\lib\features\%%F\view\controllers\%%F_controller.dart"
   > "!file!" echo import 'package:get/get.dart';
@@ -613,7 +759,22 @@ set "file=!repo_root!\lib\core\styles\app_text_styles.dart"
 > "!file!" echo import 'package:flutter/material.dart';
 >> "!file!" echo abstract final class AppTextStyles { static const body = TextStyle(fontSize: 16); }
 set "file=!repo_root!\lib\core\utils\app_key_store.dart"
-> "!file!" echo abstract final class AppKeyStore { static const themeMode = 'theme_mode'; }
+> "!file!" echo abstract final class AppKeyStore { static const themeMode = 'theme_mode'; static const onboardingAccepted = 'onboarding_accepted'; }
+set "file=!repo_root!\lib\core\routing\guards\onboarding_redirect.dart"
+> "!file!" echo import 'package:flutter/widgets.dart';
+>> "!file!" echo import 'package:get/get.dart';
+>> "!file!" echo import 'package:go_router/go_router.dart';
+>> "!file!" echo import 'package:shared_preferences/shared_preferences.dart';
+>> "!file!" echo import 'package:!flutter_project_name!/core/routing/app_route.dart';
+>> "!file!" echo import 'package:!flutter_project_name!/core/utils/app_key_store.dart';
+>> "!file!" echo String? redirectOnboardingGuard(BuildContext context, GoRouterState state) {
+>> "!file!" echo   final preferences = Get.find^<SharedPreferences^>();
+>> "!file!" echo   final hasAcceptedOnboarding = preferences.getBool(AppKeyStore.onboardingAccepted) ?? false;
+>> "!file!" echo   final isOnboardingRoute = state.matchedLocation == AppRoute.onboarding.path;
+>> "!file!" echo   if (^!hasAcceptedOnboarding ^&^& ^!isOnboardingRoute) return AppRoute.onboarding.path;
+>> "!file!" echo   if (hasAcceptedOnboarding ^&^& isOnboardingRoute) return AppRoute.home.path;
+>> "!file!" echo   return null;
+>> "!file!" echo }
 set "file=!repo_root!\lib\core\utils\extensions.dart"
 > "!file!" echo import 'package:flutter/widgets.dart';
 >> "!file!" echo extension BuildContextScreenSize on BuildContext { Size get screenSize =^> MediaQuery.sizeOf(this); }
@@ -692,7 +853,7 @@ for %%E in (!environment_names!) do (
   >> "!file!" echo import 'package:!flutter_project_name!/core/config/app_config.dart';
   >> "!file!" echo Future^<void^> main() async {
   >> "!file!" echo   WidgetsFlutterBinding.ensureInitialized();
-  >> "!file!" echo   const config = AppConfig(environment: '%%E', displayName: '!app_display_name!', baseUrl: '', routerShape: '!router_shape!');
+  >> "!file!" echo   const config = AppConfig(environment: '%%E', displayName: '!app_display_name!', baseUrl: 'http://localhost:8080', routerShape: '!router_shape!');
   >> "!file!" echo   await bootstrapApp(config: config);
   >> "!file!" echo }
 )

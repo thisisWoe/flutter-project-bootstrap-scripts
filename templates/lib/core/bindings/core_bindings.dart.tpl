@@ -11,6 +11,10 @@ import 'package:__PROJECT_NAME__/core/view/data/repo_impl/theme_repository_share
 import 'package:__PROJECT_NAME__/core/view/domain/repositories/theme_repository.dart';
 import 'package:__PROJECT_NAME__/core/view/domain/use_cases/get_theme_mode.dart';
 import 'package:__PROJECT_NAME__/core/view/domain/use_cases/set_theme_mode.dart';
+import 'package:__PROJECT_NAME__/features/onboarding/data/repo_impl/onboarding_repository_shared_prefs_impl.dart';
+import 'package:__PROJECT_NAME__/features/onboarding/domain/repositories/onboarding_repository.dart';
+import 'package:__PROJECT_NAME__/features/onboarding/domain/use_cases/get_onboarding_state.dart';
+import 'package:__PROJECT_NAME__/features/onboarding/domain/use_cases/set_onboarding_state.dart';
 import 'package:__PROJECT_NAME__/core/network/dio.dart';
 
 class CoreBindings implements Bindings {
@@ -37,6 +41,18 @@ class CoreBindings implements Bindings {
     );
     Get.put<SetThemeModeUseCase>(
       SetThemeModeUseCase(Get.find<ThemeRepository>()),
+      permanent: true,
+    );
+    Get.put<OnboardingRepository>(
+      OnboardingRepositorySharedPrefsImpl(preferences),
+      permanent: true,
+    );
+    Get.put<GetOnboardingStateUseCase>(
+      GetOnboardingStateUseCase(Get.find<OnboardingRepository>()),
+      permanent: true,
+    );
+    Get.put<SetOnboardingStateUseCase>(
+      SetOnboardingStateUseCase(Get.find<OnboardingRepository>()),
       permanent: true,
     );
     Get.put<ThemeController>(

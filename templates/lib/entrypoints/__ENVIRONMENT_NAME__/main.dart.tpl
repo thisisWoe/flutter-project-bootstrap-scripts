@@ -7,7 +7,7 @@ Future<void> main() async {
   const config = AppConfig(
     environment: '__ENVIRONMENT_NAME__',
     displayName: '__APP_DISPLAY_NAME__',
-    baseUrl: '',
+    baseUrl: 'http://localhost:8080',
     routerShape: '__ROUTER_SHAPE__',
   );
   await bootstrapApp(config: config);

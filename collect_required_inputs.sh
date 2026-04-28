@@ -290,6 +290,7 @@ run_architecture_scaffold() {
 	    "$repo_root/lib/core/config" \
 	    "$repo_root/lib/core/network" \
 	    "$repo_root/lib/core/routing" \
+    "$repo_root/lib/core/routing/guards" \
     "$repo_root/lib/core/shared_preferences/data/repo_impl" \
     "$repo_root/lib/core/shared_preferences/domain/repositories" \
     "$repo_root/lib/core/styles" \
@@ -371,7 +372,7 @@ Dio provideDio({
 }) {
   final baseUrl = appConfig?.baseUrl ?? '';
   final options = BaseOptions(
-    baseUrl: baseUrl.isEmpty ? '/api' : '\$baseUrl/api',
+    baseUrl: baseUrl.isEmpty ? 'http://localhost:8080/api' : '\$baseUrl/api',
     headers: {'Accept': 'application/json'},
     contentType: Headers.jsonContentType,
     connectTimeout: const Duration(milliseconds: 130000),
@@ -402,6 +403,10 @@ import 'package:$flutter_project_name/core/view/data/repo_impl/theme_repository_
 import 'package:$flutter_project_name/core/view/domain/repositories/theme_repository.dart';
 import 'package:$flutter_project_name/core/view/domain/use_cases/get_theme_mode.dart';
 import 'package:$flutter_project_name/core/view/domain/use_cases/set_theme_mode.dart';
+import 'package:$flutter_project_name/features/onboarding/data/repo_impl/onboarding_repository_shared_prefs_impl.dart';
+import 'package:$flutter_project_name/features/onboarding/domain/repositories/onboarding_repository.dart';
+import 'package:$flutter_project_name/features/onboarding/domain/use_cases/get_onboarding_state.dart';
+import 'package:$flutter_project_name/features/onboarding/domain/use_cases/set_onboarding_state.dart';
 import 'package:$flutter_project_name/core/network/dio.dart';
 
 class CoreBindings implements Bindings {
@@ -428,6 +433,18 @@ class CoreBindings implements Bindings {
     );
     Get.put<SetThemeModeUseCase>(
       SetThemeModeUseCase(Get.find<ThemeRepository>()),
+      permanent: true,
+    );
+    Get.put<OnboardingRepository>(
+      OnboardingRepositorySharedPrefsImpl(preferences),
+      permanent: true,
+    );
+    Get.put<GetOnboardingStateUseCase>(
+      GetOnboardingStateUseCase(Get.find<OnboardingRepository>()),
+      permanent: true,
+    );
+    Get.put<SetOnboardingStateUseCase>(
+      SetOnboardingStateUseCase(Get.find<OnboardingRepository>()),
       permanent: true,
     );
     Get.put<ThemeController>(
@@ -511,6 +528,7 @@ DART
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:$flutter_project_name/core/routing/app_route.dart';
+import 'package:$flutter_project_name/core/routing/guards/onboarding_redirect.dart';
 import 'package:$flutter_project_name/core/routing/go_router_observer.dart';
 import 'package:$flutter_project_name/features/home/view/bindings/home_bindings.dart';
 import 'package:$flutter_project_name/features/home/view/pages/home_page.dart';
@@ -526,6 +544,7 @@ GoRouter buildRootRouter() {
     navigatorKey: rootNavigatorKey,
     initialLocation: AppRoute.onboarding.path,
     observers: [GoRouterObserver()],
+    redirect: redirectOnboardingGuard,
     routes: [
       GoRoute(
         path: AppRoute.onboarding.path,
@@ -560,6 +579,7 @@ DART
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:$flutter_project_name/core/routing/app_route.dart';
+import 'package:$flutter_project_name/core/routing/guards/onboarding_redirect.dart';
 import 'package:$flutter_project_name/core/routing/go_router_observer.dart';
 import 'package:$flutter_project_name/core/view/widgets/app_shell.dart';
 import 'package:$flutter_project_name/features/home/view/bindings/home_bindings.dart';
@@ -576,6 +596,7 @@ GoRouter buildShellRouter() {
     navigatorKey: rootNavigatorKey,
     initialLocation: AppRoute.onboarding.path,
     observers: [GoRouterObserver()],
+    redirect: redirectOnboardingGuard,
     routes: [
       GoRoute(
         path: AppRoute.onboarding.path,
@@ -723,6 +744,33 @@ DART
   cat >"$repo_root/lib/core/utils/app_key_store.dart" <<'DART'
 abstract final class AppKeyStore {
   static const themeMode = 'theme_mode';
+  static const onboardingAccepted = 'onboarding_accepted';
+}
+DART
+
+  cat >"$repo_root/lib/core/routing/guards/onboarding_redirect.dart" <<DART
+import 'package:flutter/widgets.dart';
+import 'package:get/get.dart';
+import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:$flutter_project_name/core/routing/app_route.dart';
+import 'package:$flutter_project_name/core/utils/app_key_store.dart';
+
+String? redirectOnboardingGuard(BuildContext context, GoRouterState state) {
+  final preferences = Get.find<SharedPreferences>();
+  final hasAcceptedOnboarding =
+      preferences.getBool(AppKeyStore.onboardingAccepted) ?? false;
+  final isOnboardingRoute = state.matchedLocation == AppRoute.onboarding.path;
+
+  if (!hasAcceptedOnboarding && !isOnboardingRoute) {
+    return AppRoute.onboarding.path;
+  }
+
+  if (hasAcceptedOnboarding && isOnboardingRoute) {
+    return AppRoute.home.path;
+  }
+
+  return null;
 }
 DART
 
@@ -858,7 +906,188 @@ class PreferencesRepositoryImpl implements PreferencesRepository {
 }
 DART
 
-  for feature in onboarding home profile; do
+  cat >"$repo_root/lib/features/onboarding/domain/repositories/onboarding_repository.dart" <<'DART'
+abstract interface class OnboardingRepository {
+  Future<bool> getOnboardingState();
+  Future<void> setOnboardingState(bool accepted);
+}
+DART
+
+  cat >"$repo_root/lib/features/onboarding/domain/use_cases/get_onboarding_state.dart" <<DART
+import 'package:$flutter_project_name/features/onboarding/domain/repositories/onboarding_repository.dart';
+
+class GetOnboardingStateUseCase {
+  const GetOnboardingStateUseCase(this._repository);
+
+  final OnboardingRepository _repository;
+
+  Future<bool> call() {
+    return _repository.getOnboardingState();
+  }
+}
+DART
+
+  cat >"$repo_root/lib/features/onboarding/domain/use_cases/set_onboarding_state.dart" <<DART
+import 'package:$flutter_project_name/features/onboarding/domain/repositories/onboarding_repository.dart';
+
+class SetOnboardingStateUseCase {
+  const SetOnboardingStateUseCase(this._repository);
+
+  final OnboardingRepository _repository;
+
+  Future<void> call(bool accepted) {
+    return _repository.setOnboardingState(accepted);
+  }
+}
+DART
+
+  cat >"$repo_root/lib/features/onboarding/data/repo_impl/onboarding_repository_shared_prefs_impl.dart" <<DART
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:$flutter_project_name/core/utils/app_key_store.dart';
+import 'package:$flutter_project_name/features/onboarding/domain/repositories/onboarding_repository.dart';
+
+class OnboardingRepositorySharedPrefsImpl implements OnboardingRepository {
+  const OnboardingRepositorySharedPrefsImpl(this._preferences);
+
+  final SharedPreferences _preferences;
+
+  @override
+  Future<bool> getOnboardingState() async {
+    return _preferences.getBool(AppKeyStore.onboardingAccepted) ?? false;
+  }
+
+  @override
+  Future<void> setOnboardingState(bool accepted) async {
+    await _preferences.setBool(AppKeyStore.onboardingAccepted, accepted);
+  }
+}
+DART
+
+  cat >"$repo_root/lib/features/onboarding/view/controllers/onboarding_controller.dart" <<DART
+import 'package:get/get.dart';
+import 'package:$flutter_project_name/features/onboarding/domain/use_cases/get_onboarding_state.dart';
+import 'package:$flutter_project_name/features/onboarding/domain/use_cases/set_onboarding_state.dart';
+
+class OnboardingController extends GetxController {
+  OnboardingController({
+    required GetOnboardingStateUseCase getOnboardingState,
+    required SetOnboardingStateUseCase setOnboardingState,
+  }) : _getOnboardingState = getOnboardingState,
+       _setOnboardingState = setOnboardingState;
+
+  final GetOnboardingStateUseCase _getOnboardingState;
+  final SetOnboardingStateUseCase _setOnboardingState;
+
+  final title = 'Onboarding'.obs;
+  final isAccepted = false.obs;
+  final isLoading = true.obs;
+
+  @override
+  void onInit() {
+    super.onInit();
+    _loadOnboardingState();
+  }
+
+  Future<void> _loadOnboardingState() async {
+    isAccepted.value = await _getOnboardingState();
+    isLoading.value = false;
+  }
+
+  Future<void> setAccepted(bool value) async {
+    isAccepted.value = value;
+    await _setOnboardingState(value);
+  }
+}
+DART
+
+  cat >"$repo_root/lib/features/onboarding/view/bindings/onboarding_bindings.dart" <<DART
+import 'package:get/get.dart';
+import 'package:$flutter_project_name/features/onboarding/domain/use_cases/get_onboarding_state.dart';
+import 'package:$flutter_project_name/features/onboarding/domain/use_cases/set_onboarding_state.dart';
+import 'package:$flutter_project_name/features/onboarding/view/controllers/onboarding_controller.dart';
+
+class OnboardingBindings implements Bindings {
+  const OnboardingBindings();
+
+  @override
+  void dependencies() {
+    if (!Get.isRegistered<OnboardingController>()) {
+      Get.lazyPut<OnboardingController>(
+        () => OnboardingController(
+          getOnboardingState: Get.find<GetOnboardingStateUseCase>(),
+          setOnboardingState: Get.find<SetOnboardingStateUseCase>(),
+        ),
+      );
+    }
+  }
+}
+DART
+
+  cat >"$repo_root/lib/features/onboarding/view/pages/onboarding_page.dart" <<DART
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:go_router/go_router.dart';
+import 'package:$flutter_project_name/core/routing/app_route.dart';
+import 'package:$flutter_project_name/features/onboarding/view/controllers/onboarding_controller.dart';
+
+class OnboardingPage extends StatelessWidget {
+  const OnboardingPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = Get.find<OnboardingController>();
+
+    return Scaffold(
+      appBar: AppBar(title: Text(controller.title.value)),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Obx(() {
+            if (controller.isLoading.value) {
+              return const Center(child: CircularProgressIndicator());
+            }
+
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Prima di continuare devi accettare l\'onboarding.',
+                  style: Theme.of(context).textTheme.headlineSmall,
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'Conferma di aver letto e accettato per sbloccare il pulsante di accesso alla home.',
+                  style: Theme.of(context).textTheme.bodyLarge,
+                ),
+                const Spacer(),
+                CheckboxListTile(
+                  contentPadding: EdgeInsets.zero,
+                  controlAffinity: ListTileControlAffinity.leading,
+                  title: const Text('Accetto e voglio proseguire'),
+                  value: controller.isAccepted.value,
+                  onChanged: (value) => controller.setAccepted(value ?? false),
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: controller.isAccepted.value
+                        ? () => context.go(AppRoute.home.path)
+                        : null,
+                    child: const Text('Continua'),
+                  ),
+                ),
+              ],
+            );
+          }),
+        ),
+      ),
+    );
+  }
+}
+DART
+
+  for feature in home profile; do
     local feature_class
     feature_class="$(pascal_case "$feature")"
     cat >"$repo_root/lib/features/$feature/view/controllers/${feature}_controller.dart" <<DART
@@ -943,7 +1172,7 @@ Future<void> main() async {
   const config = AppConfig(
     environment: '$environment',
     displayName: '$app_display_name',
-    baseUrl: '',
+    baseUrl: 'http://localhost:8080',
     routerShape: '$router_shape',
   );
   await bootstrapApp(config: config);

@@ -8,7 +8,9 @@ class __FEATURE_CLASS_NAME__Bindings implements Bindings {
   @override
   void dependencies() {
     if (!Get.isRegistered<__FEATURE_CLASS_NAME__Controller>()) {
-      Get.lazyPut<__FEATURE_CLASS_NAME__Controller>(() => __FEATURE_CLASS_NAME__Controller());
+      Get.lazyPut<__FEATURE_CLASS_NAME__Controller>(
+        () => __FEATURE_CLASS_NAME__Controller(),
+      );
     }
   }
 }

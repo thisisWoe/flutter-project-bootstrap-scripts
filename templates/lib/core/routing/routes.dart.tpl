@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:__PROJECT_NAME__/core/routing/app_route.dart';
+import 'package:__PROJECT_NAME__/core/routing/guards/onboarding_redirect.dart';
 import 'package:__PROJECT_NAME__/core/routing/go_router_observer.dart';
 import 'package:__PROJECT_NAME__/features/home/view/bindings/home_bindings.dart';
 import 'package:__PROJECT_NAME__/features/home/view/pages/home_page.dart';
@@ -16,6 +17,7 @@ GoRouter buildRootRouter() {
     navigatorKey: rootNavigatorKey,
     initialLocation: AppRoute.onboarding.path,
     observers: [GoRouterObserver()],
+    redirect: redirectOnboardingGuard,
     routes: [
       GoRoute(
         path: AppRoute.onboarding.path,

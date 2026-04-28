@@ -236,6 +236,23 @@ run_analysis_options() {
   return 0
 }
 
+render_template_file() {
+  local template_path="$1"
+  local output_path="$2"
+
+  if [[ ! -f "$template_path" ]]; then
+    echo "Template render failed: template was not found: $template_path" >&2
+    return 1
+  fi
+
+  if ! sed "s/__PROJECT_NAME__/$flutter_project_name/g" "$template_path" >"$output_path"; then
+    echo "Template render failed while writing: $output_path" >&2
+    return 1
+  fi
+
+  return 0
+}
+
 run_architecture_scaffold() {
   if [[ -z "${repo_root:-}" ]]; then
     echo "Architecture scaffold step failed: repository root is not available." >&2
@@ -671,14 +688,12 @@ class AppShell extends StatelessWidget {
 }
 DART
 
-  cat >"$repo_root/lib/core/styles/app_colors.dart" <<'DART'
-import 'package:flutter/material.dart';
-
-abstract final class AppColors {
-  static const lightSeed = Color(0xFF286A62);
-  static const darkSeed = Color(0xFF6EC8B8);
-}
-DART
+  if ! render_template_file \
+    "$script_dir/templates/lib/core/styles/app_colors.dart.tpl" \
+    "$repo_root/lib/core/styles/app_colors.dart"; then
+    echo "Architecture scaffold step failed while rendering app_colors.dart." >&2
+    return 1
+  fi
 
   cat >"$repo_root/lib/core/styles/app_text_styles.dart" <<'DART'
 import 'package:flutter/material.dart';
@@ -689,29 +704,12 @@ abstract final class AppTextStyles {
 }
 DART
 
-  cat >"$repo_root/lib/core/styles/app_base_theme.dart" <<DART
-import 'package:flutter/material.dart';
-import 'package:$flutter_project_name/core/styles/app_colors.dart';
-
-abstract final class AppBaseTheme {
-  static ThemeData get light {
-    return ThemeData(
-      colorScheme: ColorScheme.fromSeed(seedColor: AppColors.lightSeed),
-      useMaterial3: true,
-    );
-  }
-
-  static ThemeData get dark {
-    return ThemeData(
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: AppColors.darkSeed,
-        brightness: Brightness.dark,
-      ),
-      useMaterial3: true,
-    );
-  }
-}
-DART
+  if ! render_template_file \
+    "$script_dir/templates/lib/core/styles/app_base_theme.dart.tpl" \
+    "$repo_root/lib/core/styles/app_base_theme.dart"; then
+    echo "Architecture scaffold step failed while rendering app_base_theme.dart." >&2
+    return 1
+  fi
 
   cat >"$repo_root/lib/core/styles/app_breakpoints.dart" <<'DART'
 import 'package:flutter/widgets.dart';

@@ -330,6 +330,23 @@ if errorlevel 1 (
 echo analysis_options.yaml baseline created.
 exit /b 0
 
+:render_template_file
+set "template_path=%~1"
+set "output_path=%~2"
+
+if not exist "!template_path!" (
+  echo Template render failed: template was not found: !template_path!
+  exit /b 1
+)
+
+powershell -NoProfile -ExecutionPolicy Bypass -Command "$template = Get-Content -Raw -Path $env:TEMPLATE_PATH; $template = $template.Replace('__PROJECT_NAME__', $env:FLUTTER_PROJECT_NAME); $encoding = New-Object System.Text.UTF8Encoding($false); [System.IO.File]::WriteAllText($env:OUTPUT_PATH, $template, $encoding)"
+if errorlevel 1 (
+  echo Template render failed while writing: !output_path!
+  exit /b 1
+)
+
+exit /b 0
+
 :run_architecture_scaffold
 if not defined repo_root (
   echo Architecture scaffold step failed: repository root is not available.
@@ -745,12 +762,23 @@ for %%F in (home profile) do (
 )
 
 set "file=!repo_root!\lib\core\styles\app_colors.dart"
-> "!file!" echo import 'package:flutter/material.dart';
->> "!file!" echo abstract final class AppColors { static const lightSeed = Color(0xFF286A62); }
+set "TEMPLATE_PATH=%script_dir%templates\lib\core\styles\app_colors.dart.tpl"
+set "OUTPUT_PATH=!file!"
+set "FLUTTER_PROJECT_NAME=!flutter_project_name!"
+call :render_template_file "!TEMPLATE_PATH!" "!OUTPUT_PATH!"
+if errorlevel 1 (
+  echo Architecture scaffold step failed while rendering app_colors.dart.
+  exit /b 1
+)
 set "file=!repo_root!\lib\core\styles\app_base_theme.dart"
-> "!file!" echo import 'package:flutter/material.dart';
->> "!file!" echo import 'package:!flutter_project_name!/core/styles/app_colors.dart';
->> "!file!" echo abstract final class AppBaseTheme { static ThemeData get light =^> ThemeData(colorScheme: ColorScheme.fromSeed(seedColor: AppColors.lightSeed), useMaterial3: true); }
+set "TEMPLATE_PATH=%script_dir%templates\lib\core\styles\app_base_theme.dart.tpl"
+set "OUTPUT_PATH=!file!"
+set "FLUTTER_PROJECT_NAME=!flutter_project_name!"
+call :render_template_file "!TEMPLATE_PATH!" "!OUTPUT_PATH!"
+if errorlevel 1 (
+  echo Architecture scaffold step failed while rendering app_base_theme.dart.
+  exit /b 1
+)
 set "file=!repo_root!\lib\core\styles\app_breakpoints.dart"
 > "!file!" echo enum ScreenSize { compact, medium, expanded }
 set "file=!repo_root!\lib\core\styles\app_paddings.dart"

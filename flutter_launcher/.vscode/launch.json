@@ -2,15 +2,45 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Flutter dev",
+      "name": "Flutter dev macOS",
       "request": "launch",
       "type": "dart",
+      "deviceId": "macos",
       "program": "lib/entrypoints/dev/main.dart"
     },
     {
-      "name": "Flutter prod",
+      "name": "Flutter prod macOS",
       "request": "launch",
       "type": "dart",
+      "deviceId": "macos",
+      "program": "lib/entrypoints/prod/main.dart"
+    },
+    {
+      "name": "Flutter dev Linux",
+      "request": "launch",
+      "type": "dart",
+      "deviceId": "linux",
+      "program": "lib/entrypoints/dev/main.dart"
+    },
+    {
+      "name": "Flutter prod Linux",
+      "request": "launch",
+      "type": "dart",
+      "deviceId": "linux",
+      "program": "lib/entrypoints/prod/main.dart"
+    },
+    {
+      "name": "Flutter dev Windows",
+      "request": "launch",
+      "type": "dart",
+      "deviceId": "windows",
+      "program": "lib/entrypoints/dev/main.dart"
+    },
+    {
+      "name": "Flutter prod Windows",
+      "request": "launch",
+      "type": "dart",
+      "deviceId": "windows",
       "program": "lib/entrypoints/prod/main.dart"
     }
   ]

@@ -34,7 +34,8 @@ Install these tools before running the scripts:
 - Git.
 - FVM available in `PATH`.
 - A platform toolchain compatible with the Flutter platforms you select.
-- Bash on Unix/macOS, or Command Prompt on Windows.
+- Bash on Unix/macOS.
+- Command Prompt plus PowerShell on Windows.
 
 The scripts run:
 
@@ -83,8 +84,8 @@ The scripts prompt for the following values:
 | ------------------- | -------------------------------------------------------------------------------------------------------- |
 | `project_name`      | Human-readable project name. It is normalized into a valid Flutter project name.                         |
 | `app_display_name`  | Display name injected into the generated app configuration.                                              |
-| `target_platforms`  | Comma-separated Flutter platforms. Allowed values: `android`, `ios`, `web`, `macos`, `windows`, `linux`. |
-| `environment_names` | Comma-separated environment names. At least two are required, for example `dev, prod`.                   |
+| `target_platforms`  | Interactive multi-select prompt. Allowed values: `android`, `ios`, `web`, `macos`, `windows`, `linux`. |
+| `environment_names` | Interactive multi-select prompt. Available values: `dev`, `test`, `prod`. At least two are required.   |
 | `router_shape`      | Routing layout. Allowed values: `root` or `shell`.                                                       |
 
 Example input:
@@ -93,7 +94,7 @@ Example input:
 project_name: My Client App
 app_display_name: My Client
 target_platforms: android, ios, web
-environment_names: dev, staging, prod
+environment_names: dev, test, prod
 router_shape: shell
 ```
 
@@ -104,7 +105,7 @@ Derived values are printed before generation, including:
 - `android_namespace`
 - `android_application_id`
 - `ios_bundle_identifier`
-- temporary workspace path
+- `temporary workspace path`
 
 ## Generated Project Structure
 

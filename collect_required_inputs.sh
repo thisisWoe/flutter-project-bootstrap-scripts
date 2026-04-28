@@ -1222,108 +1222,207 @@ prompt_non_empty() {
   done
 }
 
-prompt_platforms() {
-  local raw=""
-  local -a entries=()
-  local -a normalized=()
-  local -a invalid=()
-  local item=""
+render_checkbox_prompt() {
+  local title="$1"
+  local cursor_index="$2"
+  local minimum="$3"
+  local maximum="$4"
+  shift 4
+  local -a options=("$@")
+  local marker=""
+  local pointer=""
+  local index=0
 
-  echo "Target platforms (comma-separated, allowed: android, ios, web, macos, windows, linux)" >&2
-  while true; do
-    read -r -p "target_platforms: " raw || return 1
-    raw="$(trim "$raw")"
+  printf '%s\n' "$title"
+  printf '%s\n' "Use Up/Down arrows to move, Space to toggle, Enter to confirm."
+  if [[ "$maximum" -gt 0 ]]; then
+    printf '%s\n' "Selections: minimum $minimum, maximum $maximum"
+  else
+    printf '%s\n' "Minimum selections: $minimum"
+  fi
 
-    if [[ -z "$raw" ]]; then
-      echo "Please enter at least one platform." >&2
-      continue
+  for index in "${!options[@]}"; do
+    pointer=" "
+    marker="[ ]"
+    if [[ "${checkbox_selected[$index]}" -eq 1 ]]; then
+      marker="[x]"
     fi
+    if [[ "$index" -eq "$cursor_index" ]]; then
+      pointer=">"
+    fi
+    printf '%s %s %s\n' "$pointer" "$marker" "${options[$index]}"
+  done
+}
 
-    IFS=',' read -r -a entries <<< "$raw"
-    normalized=()
-    invalid=()
+read_checkbox_key() {
+  local tty_path="$1"
+  local tty_fd="$2"
+  local key=""
+  local remainder=""
+  local next_char=""
 
-    for item in "${entries[@]}"; do
-      item="$(trim "$item")"
-      item="$(lowercase "$item")"
-      [[ -z "$item" ]] && continue
+  IFS= read -rsn1 -u "$tty_fd" key || return 1
 
-      case "$item" in
-        android|ios|web|macos|windows|linux)
-          normalized+=("$item")
-          ;;
-        *)
-          invalid+=("$item")
+  if [[ "$key" == $'\x1b' ]]; then
+    remainder=""
+    stty -echo -icanon time 1 min 0 <"$tty_path"
+    while IFS= read -rsn1 -u "$tty_fd" next_char; do
+      [[ -z "$next_char" ]] && break
+      remainder+="$next_char"
+      case "$remainder" in
+        "[A"|"[B"|"OA"|"OB")
+          break
           ;;
       esac
     done
+    stty -echo -icanon time 0 min 1 <"$tty_path"
+    key+="$remainder"
+  fi
 
-    if [[ "${#normalized[@]}" -eq 0 ]]; then
-      echo "Please enter at least one valid platform." >&2
-      continue
-    fi
+  checkbox_key="$key"
+}
 
-    if [[ "${#invalid[@]}" -gt 0 ]]; then
-      echo "Invalid platform(s): $(join_by_comma "${invalid[@]}")" >&2
-      continue
-    fi
+prompt_checkbox_selection() {
+  local title="$1"
+  local minimum="$2"
+  local maximum="$3"
+  shift 3
+  local -a options=("$@")
+  local cursor_index=0
+  local selected_count=0
+  local key=""
+  local index
+  local result=()
+  local warning=""
+  local tty_path="/dev/tty"
+  local stty_state=""
+  local tty_fd=3
+  local checkbox_key=""
 
-    printf '%s' "${normalized[*]}"
-    return 0
+  if [[ ! -r "$tty_path" || ! -w "$tty_path" ]]; then
+    echo "Interactive checkbox prompt requires a TTY." >&2
+    return 1
+  fi
+
+  exec 3<>"$tty_path" || {
+    echo "Interactive checkbox prompt could not open the TTY." >&2
+    return 1
+  }
+
+  stty_state="$(stty -g <"$tty_path")"
+  stty -echo -icanon time 0 min 1 <"$tty_path"
+
+  checkbox_selected=()
+  for _ in "${options[@]}"; do
+    checkbox_selected+=(0)
   done
+
+  if command -v tput >/dev/null 2>&1; then
+    tput clear >"$tty_path"
+  fi
+  render_checkbox_prompt "$title" "$cursor_index" "$minimum" "$maximum" "${options[@]}" >"$tty_path"
+
+  while true; do
+    if ! read_checkbox_key "$tty_path" "$tty_fd"; then
+      stty "$stty_state" <"$tty_path"
+      exec 3>&-
+      exec 3<&-
+      return 1
+    fi
+    key="$checkbox_key"
+
+    if [[ "$key" == $'\x1b[A' || "$key" == $'\x1bOA' || "$key" == "k" || "$key" == "K" ]]; then
+      cursor_index=$((cursor_index - 1))
+      if [[ "$cursor_index" -lt 0 ]]; then
+        cursor_index=$((${#options[@]} - 1))
+      fi
+    elif [[ "$key" == $'\x1b[B' || "$key" == $'\x1bOB' || "$key" == "j" || "$key" == "J" ]]; then
+      cursor_index=$((cursor_index + 1))
+      if [[ "$cursor_index" -ge "${#options[@]}" ]]; then
+        cursor_index=0
+      fi
+    elif [[ "$key" == " " ]]; then
+      if [[ "${checkbox_selected[$cursor_index]}" -eq 1 ]]; then
+        checkbox_selected[$cursor_index]=0
+      else
+        if [[ "$maximum" -eq 1 ]]; then
+          for index in "${!options[@]}"; do
+            checkbox_selected[$index]=0
+          done
+        elif [[ "$maximum" -gt 0 ]]; then
+          selected_count=0
+          for index in "${!options[@]}"; do
+            if [[ "${checkbox_selected[$index]}" -eq 1 ]]; then
+              selected_count=$((selected_count + 1))
+            fi
+          done
+          if [[ "$selected_count" -ge "$maximum" ]]; then
+            warning="Select at most $maximum option(s)."
+            if command -v tput >/dev/null 2>&1; then
+              tput clear >"$tty_path"
+            fi
+            render_checkbox_prompt "$title" "$cursor_index" "$minimum" "$maximum" "${options[@]}" >"$tty_path"
+            printf '%s\n' "$warning" >"$tty_path"
+            warning=""
+            continue
+          fi
+        fi
+        checkbox_selected[$cursor_index]=1
+      fi
+    elif [[ "$key" == "" || "$key" == $'\n' || "$key" == $'\r' ]]; then
+      selected_count=0
+      for index in "${!options[@]}"; do
+        if [[ "${checkbox_selected[$index]}" -eq 1 ]]; then
+          selected_count=$((selected_count + 1))
+        fi
+      done
+      if [[ "$selected_count" -ge "$minimum" ]]; then
+        if [[ "$maximum" -eq 0 || "$selected_count" -le "$maximum" ]]; then
+          break
+        fi
+      fi
+      if [[ "$selected_count" -lt "$minimum" ]]; then
+        warning="Select at least $minimum option(s) before confirming."
+      else
+        warning="Select at most $maximum option(s) before confirming."
+      fi
+    fi
+
+    if command -v tput >/dev/null 2>&1; then
+      tput clear >"$tty_path"
+    fi
+    render_checkbox_prompt "$title" "$cursor_index" "$minimum" "$maximum" "${options[@]}" >"$tty_path"
+    if [[ -n "$warning" ]]; then
+      printf '%s\n' "$warning" >"$tty_path"
+      warning=""
+    fi
+  done
+
+  if command -v tput >/dev/null 2>&1; then
+    tput clear >"$tty_path"
+  fi
+  stty "$stty_state" <"$tty_path"
+  exec 3>&-
+  exec 3<&-
+  for index in "${!options[@]}"; do
+    if [[ "${checkbox_selected[$index]}" -eq 1 ]]; then
+      result+=("${options[$index]}")
+    fi
+  done
+
+  printf '%s' "${result[*]}"
+}
+
+prompt_platforms() {
+  prompt_checkbox_selection "target_platforms" 1 0 android ios web macos windows linux
 }
 
 prompt_environment_names() {
-  local raw=""
-  local -a entries=()
-  local -a normalized=()
-  local item=""
-
-  echo "Environment names (comma-separated, minimum 2; example: dev, prod)" >&2
-  while true; do
-    read -r -p "environment_names: " raw || return 1
-    raw="$(trim "$raw")"
-
-    if [[ -z "$raw" ]]; then
-      echo "Please enter at least 2 environment names." >&2
-      continue
-    fi
-
-    IFS=',' read -r -a entries <<< "$raw"
-    normalized=()
-
-    for item in "${entries[@]}"; do
-      item="$(trim "$item")"
-      [[ -n "$item" ]] && normalized+=("$item")
-    done
-
-    if [[ "${#normalized[@]}" -lt 2 ]]; then
-      echo "Please enter at least 2 environment names." >&2
-      continue
-    fi
-
-    printf '%s' "${normalized[*]}"
-    return 0
-  done
+  prompt_checkbox_selection "environment_names" 2 0 dev test prod
 }
 
 prompt_router_shape() {
-  local value=""
-
-  echo "Router shape (root or shell)" >&2
-  while true; do
-    read -r -p "router_shape: " value || return 1
-    value="$(lowercase "$(trim "$value")")"
-    case "$value" in
-      root|shell)
-        printf '%s' "$value"
-        return 0
-        ;;
-      *)
-        echo "Please enter either 'root' or 'shell'." >&2
-        ;;
-    esac
-  done
+  prompt_checkbox_selection "router_shape" 1 1 root shell
 }
 
 echo "Bootstrap input collector"

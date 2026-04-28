@@ -844,62 +844,24 @@ exit /b 0
 
 :prompt_platforms
 set "var_name=%~1"
-
-:prompt_platforms_loop
-set "raw="
-set /p "raw=target_platforms: "
-if not defined raw (
-  echo Please enter at least one platform.
-  goto :prompt_platforms_loop
-)
-set "valid=1"
-set "normalized="
-set "raw=%raw:,= %"
-for %%P in (%raw%) do (
-  set "platform=%%P"
-  if /i "!platform!"=="android" (
-    set "normalized=!normalized! android"
-  ) else if /i "!platform!"=="ios" (
-    set "normalized=!normalized! ios"
-  ) else if /i "!platform!"=="web" (
-    set "normalized=!normalized! web"
-  ) else if /i "!platform!"=="macos" (
-    set "normalized=!normalized! macos"
-  ) else if /i "!platform!"=="windows" (
-    set "normalized=!normalized! windows"
-  ) else if /i "!platform!"=="linux" (
-    set "normalized=!normalized! linux"
-  ) else (
-    echo Invalid platform: !platform!
-    set "valid=0"
-  )
-)
-if "!valid!"=="0" goto :prompt_platforms_loop
-set "%var_name%=%normalized:~1%"
+call :prompt_checkbox "%var_name%" "target_platforms" "1" "android;ios;web;macos;windows;linux"
 exit /b 0
 
 :prompt_environments
 set "var_name=%~1"
+call :prompt_checkbox "%var_name%" "environment_names" "2" "dev;test;prod"
+exit /b 0
 
-:prompt_environments_loop
-set "raw="
-set /p "raw=environment_names: "
-if not defined raw (
-  echo Please enter at least 2 environment names.
-  goto :prompt_environments_loop
-)
-set "count=0"
-set "normalized="
-set "raw=%raw:,= %"
-for %%E in (%raw%) do (
-  set /a count+=1
-  set "normalized=!normalized! %%E"
-)
-if !count! lss 2 (
-  echo Please enter at least 2 environment names.
-  goto :prompt_environments_loop
-)
-set "%var_name%=%normalized:~1%"
+:prompt_checkbox
+set "checkbox_var_name=%~1"
+set "CHECKBOX_TITLE=%~2"
+set "CHECKBOX_MINIMUM=%~3"
+set "CHECKBOX_OPTIONS=%~4"
+set "checkbox_result="
+for /f "usebackq delims=" %%S in (`powershell -NoProfile -ExecutionPolicy Bypass -File "%script_dir%checkbox_prompt.ps1"`) do set "checkbox_result=%%S"
+if errorlevel 1 exit /b 1
+if not defined checkbox_result exit /b 1
+set "%checkbox_var_name%=%checkbox_result%"
 exit /b 0
 
 :prompt_router_shape

@@ -762,6 +762,9 @@ linter:
     final appBaseThemeTemplate = await _renderTemplateFile(
       'lib/core/styles/app_base_theme.dart.tpl',
     );
+    final appBreakpointsTemplate = await _renderTemplateFile(
+      'lib/core/styles/app_breakpoints.dart.tpl',
+    );
 
     final scaffoldFiles = <String, String>{
       _joinPath(repoRoot!, 'lib', 'core', 'config', 'app_config.dart'):
@@ -787,7 +790,7 @@ linter:
       _joinPath(repoRoot!, 'lib', 'core', 'styles', 'app_base_theme.dart'):
           appBaseThemeTemplate,
       _joinPath(repoRoot!, 'lib', 'core', 'styles', 'app_breakpoints.dart'):
-          _appBreakpointsDart(),
+          appBreakpointsTemplate,
       _joinPath(repoRoot!, 'lib', 'core', 'styles', 'app_paddings.dart'):
           _appPaddingsDart(),
       _joinPath(repoRoot!, 'lib', 'core', 'utils', 'app_key_store.dart'):
@@ -1925,24 +1928,6 @@ abstract class AppTextStyles {
     letterSpacing: 0.5,
     color: Colors.grey,
   );
-}
-''';
-
-  String _appBreakpointsDart() => '''
-import 'package:flutter/widgets.dart';
-
-enum ScreenSize { compact, medium, expanded }
-
-abstract final class AppBreakpoints {
-  static const compact = 600.0;
-  static const medium = 840.0;
-
-  static ScreenSize of(BuildContext context) {
-    final width = MediaQuery.sizeOf(context).width;
-    if (width < compact) return ScreenSize.compact;
-    if (width < medium) return ScreenSize.medium;
-    return ScreenSize.expanded;
-  }
 }
 ''';
 

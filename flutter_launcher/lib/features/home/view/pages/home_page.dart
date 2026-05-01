@@ -33,7 +33,7 @@ class HomePage extends StatelessWidget {
                   Flexible(
                     child: Text(
                       l10n.homeTitle,
-                      style: AppTextStyles.title,
+                      style: AppTextStyles.titleLarge,
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
@@ -47,7 +47,7 @@ class HomePage extends StatelessWidget {
       backgroundColor: AppColors.surfaceTint,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(AppPaddings.lg),
+          padding: const EdgeInsets.all(AppPaddings.xxl),
           child: Obx(() {
             final steps = <_HomeStepData>[
               _HomeStepData(
@@ -61,12 +61,15 @@ class HomePage extends StatelessWidget {
                       controller.targetRoot.isNotEmpty &&
                       controller.projectNameError.value == null &&
                       controller.appDisplayNameError.value == null &&
+                      controller.organizationIdError.value == null &&
                       controller.projectName.isNotEmpty &&
-                      controller.appDisplayName.isNotEmpty,
+                      controller.appDisplayName.isNotEmpty &&
+                      controller.organizationId.isNotEmpty,
                   hasError:
                       controller.targetRootError.value != null ||
                       controller.projectNameError.value != null ||
-                      controller.appDisplayNameError.value != null,
+                      controller.appDisplayNameError.value != null ||
+                      controller.organizationIdError.value != null,
                 ),
                 content: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -93,7 +96,7 @@ class HomePage extends StatelessWidget {
                       ),
                       style: const TextStyle(color: _accordionTextColor),
                     ),
-                    const SizedBox(height: AppPaddings.md),
+                    const SizedBox(height: AppPaddings.l),
                     TextField(
                       controller: controller.projectNameController,
                       onChanged: (_) =>
@@ -109,7 +112,7 @@ class HomePage extends StatelessWidget {
                       ),
                       style: const TextStyle(color: _accordionTextColor),
                     ),
-                    const SizedBox(height: AppPaddings.md),
+                    const SizedBox(height: AppPaddings.l),
                     TextField(
                       controller: controller.appDisplayNameController,
                       onChanged: (_) =>
@@ -121,6 +124,22 @@ class HomePage extends StatelessWidget {
                         errorText: _appDisplayNameErrorText(
                           l10n,
                           controller.appDisplayNameError.value,
+                        ),
+                      ),
+                      style: const TextStyle(color: _accordionTextColor),
+                    ),
+                    const SizedBox(height: AppPaddings.l),
+                    TextField(
+                      controller: controller.organizationIdController,
+                      onChanged: (_) =>
+                          controller.organizationIdError.value = null,
+                      decoration: InputDecoration(
+                        labelText: l10n.homeOrganizationIdLabel,
+                        hintText: l10n.homeOrganizationIdHint,
+                        helperText: l10n.homeOrganizationIdHelper,
+                        errorText: _organizationIdErrorText(
+                          l10n,
+                          controller.organizationIdError.value,
                         ),
                       ),
                       style: const TextStyle(color: _accordionTextColor),
@@ -141,8 +160,8 @@ class HomePage extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Wrap(
-                      spacing: AppPaddings.sm,
-                      runSpacing: AppPaddings.sm,
+                      spacing: AppPaddings.s,
+                      runSpacing: AppPaddings.s,
                       children: [
                         for (final platform
                             in HomeController.supportedPlatforms)
@@ -171,7 +190,7 @@ class HomePage extends StatelessWidget {
                       ],
                     ),
                     if (controller.platformsHasError.value) ...[
-                      const SizedBox(height: AppPaddings.sm),
+                      const SizedBox(height: AppPaddings.s),
                       Text(
                         l10n.homePlatformsRequiredError,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -195,8 +214,8 @@ class HomePage extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Wrap(
-                      spacing: AppPaddings.sm,
-                      runSpacing: AppPaddings.sm,
+                      spacing: AppPaddings.s,
+                      runSpacing: AppPaddings.s,
                       children: [
                         for (final environment
                             in HomeController.defaultEnvironments)
@@ -225,7 +244,7 @@ class HomePage extends StatelessWidget {
                           ),
                       ],
                     ),
-                    const SizedBox(height: AppPaddings.md),
+                    const SizedBox(height: AppPaddings.l),
                     Row(
                       children: [
                         Expanded(
@@ -240,7 +259,7 @@ class HomePage extends StatelessWidget {
                             style: const TextStyle(color: _accordionTextColor),
                           ),
                         ),
-                        const SizedBox(width: AppPaddings.sm),
+                        const SizedBox(width: AppPaddings.s),
                         FilledButton(
                           style: FilledButton.styleFrom(
                             backgroundColor: AppColors.flutterSky,
@@ -252,10 +271,10 @@ class HomePage extends StatelessWidget {
                       ],
                     ),
                     if (controller.selectedEnvironments.isNotEmpty) ...[
-                      const SizedBox(height: AppPaddings.md),
+                      const SizedBox(height: AppPaddings.l),
                       Wrap(
-                        spacing: AppPaddings.sm,
-                        runSpacing: AppPaddings.sm,
+                        spacing: AppPaddings.s,
+                        runSpacing: AppPaddings.s,
                         children: [
                           for (final environment
                               in controller.selectedEnvironments)
@@ -277,7 +296,7 @@ class HomePage extends StatelessWidget {
                       ),
                     ],
                     if (controller.environmentsHasError.value) ...[
-                      const SizedBox(height: AppPaddings.sm),
+                      const SizedBox(height: AppPaddings.s),
                       Text(
                         l10n.homeEnvironmentsRequiredError,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -303,7 +322,7 @@ class HomePage extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Wrap(
-                      spacing: AppPaddings.sm,
+                      spacing: AppPaddings.s,
                       children: [
                         for (final shape in HomeController.routerShapes)
                           ChoiceChip(
@@ -324,7 +343,7 @@ class HomePage extends StatelessWidget {
                       ],
                     ),
                     if (controller.routerShapeHasError.value) ...[
-                      const SizedBox(height: AppPaddings.sm),
+                      const SizedBox(height: AppPaddings.s),
                       Text(
                         l10n.homeRouterShapeRequiredError,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -332,13 +351,13 @@ class HomePage extends StatelessWidget {
                         ),
                       ),
                     ],
-                    const SizedBox(height: AppPaddings.lg),
+                    const SizedBox(height: AppPaddings.xxl),
                     Card(
                       color: _accordionSurfaceColor,
                       surfaceTintColor: _accordionSurfaceColor,
                       margin: EdgeInsets.zero,
                       child: Padding(
-                        padding: const EdgeInsets.all(AppPaddings.md),
+                        padding: const EdgeInsets.all(AppPaddings.l),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -347,7 +366,7 @@ class HomePage extends StatelessWidget {
                               style: Theme.of(context).textTheme.titleMedium
                                   ?.copyWith(color: _accordionTextColor),
                             ),
-                            const SizedBox(height: AppPaddings.sm),
+                            const SizedBox(height: AppPaddings.s),
                             _SummaryRow(
                               label: 'target_root',
                               value:
@@ -368,6 +387,14 @@ class HomePage extends StatelessWidget {
                               label: 'app_display_name',
                               value:
                                   controller.collectedValues['app_display_name']
+                                      as String? ??
+                                  '',
+                              color: _accordionTextColor,
+                            ),
+                            _SummaryRow(
+                              label: 'organization_id',
+                              value:
+                                  controller.collectedValues['organization_id']
                                       as String? ??
                                   '',
                               color: _accordionTextColor,
@@ -400,14 +427,14 @@ class HomePage extends StatelessWidget {
                                 controller.bootstrapSuccess.value != null ||
                                 controller.bootstrapError.value != null ||
                                 controller.bootstrapLogs.isNotEmpty) ...[
-                              const SizedBox(height: AppPaddings.md),
+                              const SizedBox(height: AppPaddings.l),
                               if (controller.isRunningBootstrap.value)
                                 const LinearProgressIndicator(
                                   color: AppColors.flutterSky,
                                 ),
                               if (controller.bootstrapSuccess.value !=
                                   null) ...[
-                                const SizedBox(height: AppPaddings.sm),
+                                const SizedBox(height: AppPaddings.s),
                                 Text(
                                   controller.bootstrapSuccess.value!,
                                   style: Theme.of(context).textTheme.bodyMedium
@@ -415,7 +442,7 @@ class HomePage extends StatelessWidget {
                                 ),
                               ],
                               if (controller.bootstrapError.value != null) ...[
-                                const SizedBox(height: AppPaddings.sm),
+                                const SizedBox(height: AppPaddings.s),
                                 Text(
                                   controller.bootstrapError.value!,
                                   style: Theme.of(context).textTheme.bodyMedium
@@ -423,14 +450,14 @@ class HomePage extends StatelessWidget {
                                 ),
                               ],
                               if (controller.bootstrapLogs.isNotEmpty) ...[
-                                const SizedBox(height: AppPaddings.md),
+                                const SizedBox(height: AppPaddings.l),
                                 Container(
                                   width: double.infinity,
                                   constraints: const BoxConstraints(
                                     minHeight: 120,
                                     maxHeight: 260,
                                   ),
-                                  padding: const EdgeInsets.all(AppPaddings.sm),
+                                  padding: const EdgeInsets.all(AppPaddings.s),
                                   decoration: BoxDecoration(
                                     color: AppColors.surfaceTint.withValues(
                                       alpha: 0.14,
@@ -486,7 +513,7 @@ class HomePage extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             step.content,
-                            const SizedBox(height: AppPaddings.md),
+                            const SizedBox(height: AppPaddings.l),
                             _StepControls(
                               isLastStep: index == steps.length - 1,
                               canGoBack: index > 0,
@@ -594,6 +621,23 @@ String? _appDisplayNameErrorText(
   };
 }
 
+String? _organizationIdErrorText(
+  AppLocalizations l10n,
+  OrganizationIdValidationError? error,
+) {
+  return switch (error) {
+    null => null,
+    OrganizationIdValidationError.required =>
+      l10n.homeOrganizationIdRequiredError,
+    OrganizationIdValidationError.tooLong =>
+      l10n.homeOrganizationIdTooLongError,
+    OrganizationIdValidationError.leadingOrTrailingWhitespace =>
+      l10n.homeOrganizationIdLeadingOrTrailingWhitespaceError,
+    OrganizationIdValidationError.invalidFormat =>
+      l10n.homeOrganizationIdInvalidFormatError,
+  };
+}
+
 StepState _stepState({
   required int currentStep,
   required int stepIndex,
@@ -662,7 +706,7 @@ class _VerticalStepItem extends StatelessWidget {
         : colorScheme.outlineVariant;
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: AppPaddings.lg),
+      padding: const EdgeInsets.only(bottom: AppPaddings.xxl),
       child: Stack(
         children: [
           Positioned(
@@ -688,7 +732,7 @@ class _VerticalStepItem extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(width: AppPaddings.md),
+              const SizedBox(width: AppPaddings.l),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -728,7 +772,7 @@ class _VerticalStepItem extends StatelessWidget {
                           ? const SizedBox.shrink()
                           : Card(
                               margin: const EdgeInsets.only(
-                                top: AppPaddings.md,
+                                top: AppPaddings.l,
                               ),
                               color: AppColors.darkOnSurfaceVariant,
                               surfaceTintColor: AppColors.darkOnSurfaceVariant,
@@ -784,7 +828,7 @@ class _VerticalStepItem extends StatelessWidget {
                                   ),
                                   child: Padding(
                                     padding: const EdgeInsets.all(
-                                      AppPaddings.md,
+                                      AppPaddings.l,
                                     ),
                                     child: content,
                                   ),
@@ -882,8 +926,8 @@ class _StepControls extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Wrap(
-      spacing: AppPaddings.sm,
-      runSpacing: AppPaddings.sm,
+      spacing: AppPaddings.s,
+      runSpacing: AppPaddings.s,
       children: [
         ElevatedButton(
           style: ElevatedButton.styleFrom(

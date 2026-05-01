@@ -9,6 +9,7 @@ class BootstrapRequest {
     required this.targetRoot,
     required this.projectName,
     required this.appDisplayName,
+    required this.organizationId,
     required this.targetPlatforms,
     required this.environmentNames,
     required this.routerShape,
@@ -17,6 +18,7 @@ class BootstrapRequest {
   final String targetRoot;
   final String projectName;
   final String appDisplayName;
+  final String organizationId;
   final List<String> targetPlatforms;
   final List<String> environmentNames;
   final String routerShape;
@@ -34,7 +36,7 @@ class BootstrapFailure implements Exception {
 class BootstrapService {
   const BootstrapService();
 
-  static const _organizationId = 'it.alessandrorondolini';
+  static const defaultOrganizationId = 'it.alessandrorondolini';
   static const _runtimeDependencies = <String>[
     'dio',
     'shared_preferences',
@@ -115,6 +117,7 @@ class _BootstrapSession {
 
   late final String projectName = _trim(request.projectName);
   late final String appDisplayName = _trim(request.appDisplayName);
+  late final String organizationId = _trim(request.organizationId);
   late final List<String> targetPlatforms = request.targetPlatforms
       .map(_trim)
       .where((value) => value.isNotEmpty)
@@ -126,8 +129,7 @@ class _BootstrapSession {
   late final String routerShape = _trim(request.routerShape);
   late final String flutterProjectName = _sanitizeSnakeCase(projectName);
   late final String platformName = _sanitizePlatformName(projectName);
-  late final String platformIdentifierBase =
-      '${BootstrapService._organizationId}.$platformName';
+  late final String platformIdentifierBase = '$organizationId.$platformName';
   late final String appClassName = '${_pascalCase(flutterProjectName)}App';
 
   String? repoRoot;
@@ -146,12 +148,12 @@ class _BootstrapSession {
       _log('Collected values');
       _log('project_name: $projectName');
       _log('app_display_name: $appDisplayName');
+      _log('organization_id: $organizationId');
       _log('target_platforms: [${targetPlatforms.join(' ')}]');
       _log('environment_names: [${environmentNames.join(' ')}]');
       _log('router_shape: $routerShape');
       _log('');
       _log('derived_values');
-      _log('organization_id: ${BootstrapService._organizationId}');
       _log('flutter_project_name: $flutterProjectName');
       _log('platform_identifier_base: $platformIdentifierBase');
       _log('android_namespace: $platformIdentifierBase');
@@ -216,8 +218,10 @@ class _BootstrapSession {
 
   Future<String> _renderTemplateFile(String relativePath) async {
     final root = await _resolveTemplatesRoot();
-    final templatePath =
-        [root, ...relativePath.split('/')].join(Platform.pathSeparator);
+    final templatePath = [
+      root,
+      ...relativePath.split('/'),
+    ].join(Platform.pathSeparator);
     final templateFile = File(templatePath);
     if (!await templateFile.exists()) {
       _fail('Template render failed: template was not found: $templatePath');
@@ -263,7 +267,14 @@ class _BootstrapSession {
 
     for (final root in candidateRoots) {
       final templateFile = File(
-        _joinPath(root, 'templates', 'lib', 'core', 'styles', 'app_colors.dart.tpl'),
+        _joinPath(
+          root,
+          'templates',
+          'lib',
+          'core',
+          'styles',
+          'app_colors.dart.tpl',
+        ),
       );
       if (await templateFile.exists()) {
         templatesRoot = _joinPath(root, 'templates');
@@ -577,6 +588,7 @@ class _BootstrapSession {
     );
 
     if (flutterProjectName.isEmpty ||
+        organizationId.isEmpty ||
         platformIdentifierBase.isEmpty ||
         appDisplayName.isEmpty) {
       _fail('Apple rename check failed: required derived values are missing.');
@@ -589,7 +601,7 @@ class _BootstrapSession {
     final flutterPlatforms = targetPlatforms.join(',');
     _log('create_flutter_app');
     _log(
-      'Running: cd "$tempDirectory" && fvm flutter create --project-name "$flutterProjectName" --org ${BootstrapService._organizationId} --platforms="$flutterPlatforms" .',
+      'Running: cd "$tempDirectory" && fvm flutter create --project-name "$flutterProjectName" --org $organizationId --platforms="$flutterPlatforms" .',
     );
     await _runCommand(
       null,
@@ -600,7 +612,7 @@ class _BootstrapSession {
         '--project-name',
         flutterProjectName,
         '--org',
-        BootstrapService._organizationId,
+        organizationId,
         '--platforms=$flutterPlatforms',
         '.',
       ],
@@ -1670,9 +1682,249 @@ class AppShell extends StatelessWidget {
   String _appTextStylesDart() => '''
 import 'package:flutter/material.dart';
 
-abstract final class AppTextStyles {
-  static const title = TextStyle(fontSize: 28, fontWeight: FontWeight.w700);
-  static const body = TextStyle(fontSize: 16, fontWeight: FontWeight.w400);
+abstract class AppTextStyles {
+  // ───────────────────── Display ─────────────────────
+  static const TextStyle displayLarge = TextStyle(
+    fontSize: 57,
+    fontWeight: FontWeight.bold,
+    height: 64 / 57,
+    letterSpacing: -0.25,
+  );
+  static const TextStyle displayLargeItalic = TextStyle(
+    fontSize: 57,
+    fontWeight: FontWeight.bold,
+    height: 64 / 57,
+    letterSpacing: -0.25,
+    fontStyle: FontStyle.italic,
+  );
+
+  static const TextStyle displayMedium = TextStyle(
+    fontSize: 45,
+    fontWeight: FontWeight.bold,
+    height: 52 / 45,
+  );
+  static const TextStyle displayMediumItalic = TextStyle(
+    fontSize: 45,
+    fontWeight: FontWeight.bold,
+    height: 52 / 45,
+    fontStyle: FontStyle.italic,
+  );
+
+  static const TextStyle displaySmall = TextStyle(
+    fontSize: 36,
+    fontWeight: FontWeight.w700,
+    height: 44 / 36,
+  );
+  static const TextStyle displaySmallItalic = TextStyle(
+    fontSize: 36,
+    fontWeight: FontWeight.w700,
+    height: 44 / 36,
+    fontStyle: FontStyle.italic,
+  );
+
+  // ───────────────────── Headlines ─────────────────────
+  static const TextStyle headlineLarge = TextStyle(
+    fontSize: 32,
+    fontWeight: FontWeight.w700,
+    height: 40 / 32,
+  );
+  static const TextStyle headlineLargeItalic = TextStyle(
+    fontSize: 32,
+    fontWeight: FontWeight.w700,
+    height: 40 / 32,
+    fontStyle: FontStyle.italic,
+  );
+
+  static const TextStyle headlineMedium = TextStyle(
+    fontSize: 28,
+    fontWeight: FontWeight.w700,
+    height: 36 / 28,
+  );
+  static const TextStyle headlineMediumItalic = TextStyle(
+    fontSize: 28,
+    fontWeight: FontWeight.w700,
+    height: 36 / 28,
+    fontStyle: FontStyle.italic,
+  );
+
+  static const TextStyle headlineSmall = TextStyle(
+    fontSize: 24,
+    fontWeight: FontWeight.w700,
+    height: 32 / 24,
+  );
+  static const TextStyle headlineSmallItalic = TextStyle(
+    fontSize: 24,
+    fontWeight: FontWeight.w700,
+    height: 32 / 24,
+    fontStyle: FontStyle.italic,
+  );
+
+  // ───────────────────── Titles ─────────────────────
+  static const TextStyle titleLarge = TextStyle(
+    fontSize: 22,
+    fontWeight: FontWeight.w600,
+    height: 28 / 22,
+  );
+  static const TextStyle titleLargeItalic = TextStyle(
+    fontSize: 22,
+    fontWeight: FontWeight.w600,
+    height: 28 / 22,
+    fontStyle: FontStyle.italic,
+  );
+
+  static const TextStyle titleMedium = TextStyle(
+    fontSize: 16,
+    fontWeight: FontWeight.w600,
+    height: 24 / 16,
+    letterSpacing: 0.15,
+  );
+  static const TextStyle titleMediumItalic = TextStyle(
+    fontSize: 16,
+    fontWeight: FontWeight.w600,
+    height: 24 / 16,
+    letterSpacing: 0.15,
+    fontStyle: FontStyle.italic,
+  );
+
+  static const TextStyle titleSmall = TextStyle(
+    fontSize: 14,
+    fontWeight: FontWeight.w600,
+    height: 20 / 14,
+    letterSpacing: 0.1,
+  );
+  static const TextStyle titleSmallItalic = TextStyle(
+    fontSize: 14,
+    fontWeight: FontWeight.w600,
+    height: 20 / 14,
+    letterSpacing: 0.1,
+    fontStyle: FontStyle.italic,
+  );
+
+  // ───────────────────── Body ─────────────────────
+  static const TextStyle bodyLarge = TextStyle(
+    fontSize: 16,
+    fontWeight: FontWeight.w400,
+    height: 24 / 16,
+    letterSpacing: 0.5,
+  );
+  static const TextStyle bodyLargeItalic = TextStyle(
+    fontSize: 16,
+    fontWeight: FontWeight.w400,
+    height: 24 / 16,
+    letterSpacing: 0.5,
+    fontStyle: FontStyle.italic,
+  );
+
+  static const TextStyle bodyMedium = TextStyle(
+    fontSize: 14,
+    fontWeight: FontWeight.w400,
+    height: 20 / 14,
+    letterSpacing: 0.25,
+  );
+  static const TextStyle bodyMediumItalic = TextStyle(
+    fontSize: 14,
+    fontWeight: FontWeight.w400,
+    height: 20 / 14,
+    letterSpacing: 0.25,
+    fontStyle: FontStyle.italic,
+  );
+
+  static const TextStyle bodySmall = TextStyle(
+    fontSize: 12,
+    fontWeight: FontWeight.w400,
+    height: 16 / 12,
+    letterSpacing: 0.4,
+  );
+  static const TextStyle bodySmallItalic = TextStyle(
+    fontSize: 12,
+    fontWeight: FontWeight.w400,
+    height: 16 / 12,
+    letterSpacing: 0.4,
+    fontStyle: FontStyle.italic,
+  );
+
+  // ───────────────────── Labels ─────────────────────
+  static const TextStyle labelLarge = TextStyle(
+    fontSize: 14,
+    fontWeight: FontWeight.w700,
+    height: 20 / 14,
+    letterSpacing: 0.1,
+  );
+  static const TextStyle labelLargeItalic = TextStyle(
+    fontSize: 14,
+    fontWeight: FontWeight.w700,
+    height: 20 / 14,
+    letterSpacing: 0.1,
+    fontStyle: FontStyle.italic,
+  );
+
+  static const TextStyle labelMedium = TextStyle(
+    fontSize: 12,
+    fontWeight: FontWeight.w600,
+    height: 16 / 12,
+    letterSpacing: 0.5,
+  );
+  static const TextStyle labelMediumItalic = TextStyle(
+    fontSize: 12,
+    fontWeight: FontWeight.w600,
+    height: 16 / 12,
+    letterSpacing: 0.5,
+    fontStyle: FontStyle.italic,
+  );
+
+  static const TextStyle labelSmall = TextStyle(
+    fontSize: 11,
+    fontWeight: FontWeight.w600,
+    height: 16 / 11,
+    letterSpacing: 0.5,
+  );
+  static const TextStyle labelSmallItalic = TextStyle(
+    fontSize: 11,
+    fontWeight: FontWeight.w600,
+    height: 16 / 11,
+    letterSpacing: 0.5,
+    fontStyle: FontStyle.italic,
+  );
+
+  // ───────────────────── Buttons ─────────────────────
+  static const TextStyle buttonPrimary = TextStyle(
+    fontSize: 14,
+    fontWeight: FontWeight.w700,
+    height: 20 / 14,
+    letterSpacing: 0.75,
+    color: Colors.white,
+  );
+  static const TextStyle buttonPrimaryItalic = TextStyle(
+    fontSize: 14,
+    fontWeight: FontWeight.w700,
+    height: 20 / 14,
+    letterSpacing: 0.75,
+    color: Colors.white,
+    fontStyle: FontStyle.italic,
+  );
+
+  static const TextStyle buttonSecondary = TextStyle(
+    fontSize: 14,
+    fontWeight: FontWeight.w600,
+    height: 20 / 14,
+    letterSpacing: 0.75,
+  );
+  static const TextStyle buttonSecondaryItalic = TextStyle(
+    fontSize: 14,
+    fontWeight: FontWeight.w600,
+    height: 20 / 14,
+    letterSpacing: 0.75,
+    fontStyle: FontStyle.italic,
+  );
+
+  // ───────────────────── Captions & Overline ─────────────────────
+  static const TextStyle caption = TextStyle(
+    fontSize: 11,
+    fontWeight: FontWeight.w400,
+    height: 16 / 11,
+    letterSpacing: 0.5,
+    color: Colors.grey,
+  );
 }
 ''';
 
@@ -1695,12 +1947,16 @@ abstract final class AppBreakpoints {
 ''';
 
   String _appPaddingsDart() => '''
-abstract final class AppPaddings {
-  static const xs = 4.0;
-  static const sm = 8.0;
-  static const md = 16.0;
-  static const lg = 24.0;
-  static const xl = 32.0;
+abstract class AppPaddings {
+  static const double xs = 4.0;
+  static const double s = 8.0;
+  static const double m = 12.0;
+  static const double l = 16.0;
+  static const double xl = 20.0;
+  static const double xxl = 24.0;
+  static const double xxxl = 36.0;
+  static const double venti = 72.0;
+  static const double giant = 144.0;
 }
 ''';
 

@@ -43,6 +43,13 @@ enum AppDisplayNameValidationError {
   noVisibleCharacter,
 }
 
+enum OrganizationIdValidationError {
+  required,
+  tooLong,
+  leadingOrTrailingWhitespace,
+  invalidFormat,
+}
+
 class HomeController extends GetxController {
   HomeController({BootstrapService? bootstrapService})
     : _bootstrapService = bootstrapService ?? const BootstrapService();
@@ -51,6 +58,7 @@ class HomeController extends GetxController {
   static const _maxDerivedFlutterNameLength = 50;
   static const _maxDerivedPlatformNameLength = 40;
   static const _maxAppDisplayNameLength = 60;
+  static const _maxOrganizationIdLength = 120;
 
   static const _allowedTargetRootEntries = <String>{
     '.git',
@@ -94,6 +102,7 @@ class HomeController extends GetxController {
   final targetRootController = TextEditingController();
   final projectNameController = TextEditingController();
   final appDisplayNameController = TextEditingController();
+  final organizationIdController = TextEditingController();
   final customEnvironmentController = TextEditingController();
 
   final selectedPlatforms = <String>[].obs;
@@ -107,6 +116,7 @@ class HomeController extends GetxController {
   final targetRootError = Rxn<TargetRootValidationError>();
   final projectNameError = Rxn<ProjectNameValidationError>();
   final appDisplayNameError = Rxn<AppDisplayNameValidationError>();
+  final organizationIdError = Rxn<OrganizationIdValidationError>();
   final isRunningBootstrap = false.obs;
   final bootstrapLogs = <String>[].obs;
   final bootstrapError = RxnString();
@@ -127,10 +137,13 @@ class HomeController extends GetxController {
 
   String get appDisplayName => appDisplayNameController.text.trim();
 
+  String get organizationId => organizationIdController.text.trim();
+
   Map<String, Object?> get collectedValues => <String, Object?>{
     'target_root': targetRoot,
     'project_name': projectName,
     'app_display_name': appDisplayName,
+    'organization_id': organizationId,
     'target_platforms': selectedPlatforms.toList(growable: false),
     'environment_names': selectedEnvironments.toList(growable: false),
     'router_shape': routerShape.value,
@@ -204,6 +217,7 @@ class HomeController extends GetxController {
           targetRoot: targetRoot,
           projectName: projectName,
           appDisplayName: appDisplayName,
+          organizationId: organizationId,
           targetPlatforms: selectedPlatforms.toList(growable: false),
           environmentNames: selectedEnvironments.toList(growable: false),
           routerShape: routerShape.value ?? '',
@@ -298,10 +312,12 @@ class HomeController extends GetxController {
     targetRootError.value = _validateTargetRoot();
     projectNameError.value = _validateProjectName();
     appDisplayNameError.value = _validateAppDisplayName();
+    organizationIdError.value = _validateOrganizationId();
 
     return targetRootError.value == null &&
         projectNameError.value == null &&
-        appDisplayNameError.value == null;
+        appDisplayNameError.value == null &&
+        organizationIdError.value == null;
   }
 
   bool _validatePlatformsStep() {
@@ -327,6 +343,7 @@ class HomeController extends GetxController {
     targetRootController.dispose();
     projectNameController.dispose();
     appDisplayNameController.dispose();
+    organizationIdController.dispose();
     customEnvironmentController.dispose();
     super.onClose();
   }
@@ -476,6 +493,31 @@ class HomeController extends GetxController {
     }
     if (trimmedValue.contains(r'\')) {
       return AppDisplayNameValidationError.containsBackslash;
+    }
+
+    return null;
+  }
+
+  OrganizationIdValidationError? _validateOrganizationId() {
+    final rawValue = organizationIdController.text;
+    if (rawValue.isEmpty) {
+      return OrganizationIdValidationError.required;
+    }
+
+    final trimmedValue = rawValue.trim();
+    if (trimmedValue.isEmpty) {
+      return OrganizationIdValidationError.required;
+    }
+    if (rawValue != trimmedValue) {
+      return OrganizationIdValidationError.leadingOrTrailingWhitespace;
+    }
+    if (trimmedValue.length > _maxOrganizationIdLength) {
+      return OrganizationIdValidationError.tooLong;
+    }
+    if (!RegExp(
+      r'^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)+$',
+    ).hasMatch(trimmedValue)) {
+      return OrganizationIdValidationError.invalidFormat;
     }
 
     return null;

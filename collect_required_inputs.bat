@@ -782,10 +782,264 @@ if errorlevel 1 (
 set "file=!repo_root!\lib\core\styles\app_breakpoints.dart"
 > "!file!" echo enum ScreenSize { compact, medium, expanded }
 set "file=!repo_root!\lib\core\styles\app_paddings.dart"
-> "!file!" echo abstract final class AppPaddings { static const md = 16.0; }
+> "!file!" echo abstract class AppPaddings {
+>> "!file!" echo   static const double xs = 4.0;
+>> "!file!" echo   static const double s = 8.0;
+>> "!file!" echo   static const double m = 12.0;
+>> "!file!" echo   static const double l = 16.0;
+>> "!file!" echo   static const double xl = 20.0;
+>> "!file!" echo   static const double xxl = 24.0;
+>> "!file!" echo   static const double xxxl = 36.0;
+>> "!file!" echo   static const double venti = 72.0;
+>> "!file!" echo   static const double giant = 144.0;
+>> "!file!" echo }
 set "file=!repo_root!\lib\core\styles\app_text_styles.dart"
 > "!file!" echo import 'package:flutter/material.dart';
->> "!file!" echo abstract final class AppTextStyles { static const body = TextStyle(fontSize: 16); }
+>> "!file!" echo.
+>> "!file!" echo abstract class AppTextStyles {
+>> "!file!" echo   // ───────────────────── Display ─────────────────────
+>> "!file!" echo   static const TextStyle displayLarge = TextStyle(
+>> "!file!" echo     fontSize: 57,
+>> "!file!" echo     fontWeight: FontWeight.bold,
+>> "!file!" echo     height: 64 / 57,
+>> "!file!" echo     letterSpacing: -0.25,
+>> "!file!" echo   ^);
+>> "!file!" echo   static const TextStyle displayLargeItalic = TextStyle(
+>> "!file!" echo     fontSize: 57,
+>> "!file!" echo     fontWeight: FontWeight.bold,
+>> "!file!" echo     height: 64 / 57,
+>> "!file!" echo     letterSpacing: -0.25,
+>> "!file!" echo     fontStyle: FontStyle.italic,
+>> "!file!" echo   ^);
+>> "!file!" echo.
+>> "!file!" echo   static const TextStyle displayMedium = TextStyle(
+>> "!file!" echo     fontSize: 45,
+>> "!file!" echo     fontWeight: FontWeight.bold,
+>> "!file!" echo     height: 52 / 45,
+>> "!file!" echo   ^);
+>> "!file!" echo   static const TextStyle displayMediumItalic = TextStyle(
+>> "!file!" echo     fontSize: 45,
+>> "!file!" echo     fontWeight: FontWeight.bold,
+>> "!file!" echo     height: 52 / 45,
+>> "!file!" echo     fontStyle: FontStyle.italic,
+>> "!file!" echo   ^);
+>> "!file!" echo.
+>> "!file!" echo   static const TextStyle displaySmall = TextStyle(
+>> "!file!" echo     fontSize: 36,
+>> "!file!" echo     fontWeight: FontWeight.w700,
+>> "!file!" echo     height: 44 / 36,
+>> "!file!" echo   ^);
+>> "!file!" echo   static const TextStyle displaySmallItalic = TextStyle(
+>> "!file!" echo     fontSize: 36,
+>> "!file!" echo     fontWeight: FontWeight.w700,
+>> "!file!" echo     height: 44 / 36,
+>> "!file!" echo     fontStyle: FontStyle.italic,
+>> "!file!" echo   ^);
+>> "!file!" echo.
+>> "!file!" echo   // ───────────────────── Headlines ─────────────────────
+>> "!file!" echo   static const TextStyle headlineLarge = TextStyle(
+>> "!file!" echo     fontSize: 32,
+>> "!file!" echo     fontWeight: FontWeight.w700,
+>> "!file!" echo     height: 40 / 32,
+>> "!file!" echo   ^);
+>> "!file!" echo   static const TextStyle headlineLargeItalic = TextStyle(
+>> "!file!" echo     fontSize: 32,
+>> "!file!" echo     fontWeight: FontWeight.w700,
+>> "!file!" echo     height: 40 / 32,
+>> "!file!" echo     fontStyle: FontStyle.italic,
+>> "!file!" echo   ^);
+>> "!file!" echo.
+>> "!file!" echo   static const TextStyle headlineMedium = TextStyle(
+>> "!file!" echo     fontSize: 28,
+>> "!file!" echo     fontWeight: FontWeight.w700,
+>> "!file!" echo     height: 36 / 28,
+>> "!file!" echo   ^);
+>> "!file!" echo   static const TextStyle headlineMediumItalic = TextStyle(
+>> "!file!" echo     fontSize: 28,
+>> "!file!" echo     fontWeight: FontWeight.w700,
+>> "!file!" echo     height: 36 / 28,
+>> "!file!" echo     fontStyle: FontStyle.italic,
+>> "!file!" echo   ^);
+>> "!file!" echo.
+>> "!file!" echo   static const TextStyle headlineSmall = TextStyle(
+>> "!file!" echo     fontSize: 24,
+>> "!file!" echo     fontWeight: FontWeight.w700,
+>> "!file!" echo     height: 32 / 24,
+>> "!file!" echo   ^);
+>> "!file!" echo   static const TextStyle headlineSmallItalic = TextStyle(
+>> "!file!" echo     fontSize: 24,
+>> "!file!" echo     fontWeight: FontWeight.w700,
+>> "!file!" echo     height: 32 / 24,
+>> "!file!" echo     fontStyle: FontStyle.italic,
+>> "!file!" echo   ^);
+>> "!file!" echo.
+>> "!file!" echo   // ───────────────────── Titles ─────────────────────
+>> "!file!" echo   static const TextStyle titleLarge = TextStyle(
+>> "!file!" echo     fontSize: 22,
+>> "!file!" echo     fontWeight: FontWeight.w600,
+>> "!file!" echo     height: 28 / 22,
+>> "!file!" echo   ^);
+>> "!file!" echo   static const TextStyle titleLargeItalic = TextStyle(
+>> "!file!" echo     fontSize: 22,
+>> "!file!" echo     fontWeight: FontWeight.w600,
+>> "!file!" echo     height: 28 / 22,
+>> "!file!" echo     fontStyle: FontStyle.italic,
+>> "!file!" echo   ^);
+>> "!file!" echo.
+>> "!file!" echo   static const TextStyle titleMedium = TextStyle(
+>> "!file!" echo     fontSize: 16,
+>> "!file!" echo     fontWeight: FontWeight.w600,
+>> "!file!" echo     height: 24 / 16,
+>> "!file!" echo     letterSpacing: 0.15,
+>> "!file!" echo   ^);
+>> "!file!" echo   static const TextStyle titleMediumItalic = TextStyle(
+>> "!file!" echo     fontSize: 16,
+>> "!file!" echo     fontWeight: FontWeight.w600,
+>> "!file!" echo     height: 24 / 16,
+>> "!file!" echo     letterSpacing: 0.15,
+>> "!file!" echo     fontStyle: FontStyle.italic,
+>> "!file!" echo   ^);
+>> "!file!" echo.
+>> "!file!" echo   static const TextStyle titleSmall = TextStyle(
+>> "!file!" echo     fontSize: 14,
+>> "!file!" echo     fontWeight: FontWeight.w600,
+>> "!file!" echo     height: 20 / 14,
+>> "!file!" echo     letterSpacing: 0.1,
+>> "!file!" echo   ^);
+>> "!file!" echo   static const TextStyle titleSmallItalic = TextStyle(
+>> "!file!" echo     fontSize: 14,
+>> "!file!" echo     fontWeight: FontWeight.w600,
+>> "!file!" echo     height: 20 / 14,
+>> "!file!" echo     letterSpacing: 0.1,
+>> "!file!" echo     fontStyle: FontStyle.italic,
+>> "!file!" echo   ^);
+>> "!file!" echo.
+>> "!file!" echo   // ───────────────────── Body ─────────────────────
+>> "!file!" echo   static const TextStyle bodyLarge = TextStyle(
+>> "!file!" echo     fontSize: 16,
+>> "!file!" echo     fontWeight: FontWeight.w400,
+>> "!file!" echo     height: 24 / 16,
+>> "!file!" echo     letterSpacing: 0.5,
+>> "!file!" echo   ^);
+>> "!file!" echo   static const TextStyle bodyLargeItalic = TextStyle(
+>> "!file!" echo     fontSize: 16,
+>> "!file!" echo     fontWeight: FontWeight.w400,
+>> "!file!" echo     height: 24 / 16,
+>> "!file!" echo     letterSpacing: 0.5,
+>> "!file!" echo     fontStyle: FontStyle.italic,
+>> "!file!" echo   ^);
+>> "!file!" echo.
+>> "!file!" echo   static const TextStyle bodyMedium = TextStyle(
+>> "!file!" echo     fontSize: 14,
+>> "!file!" echo     fontWeight: FontWeight.w400,
+>> "!file!" echo     height: 20 / 14,
+>> "!file!" echo     letterSpacing: 0.25,
+>> "!file!" echo   ^);
+>> "!file!" echo   static const TextStyle bodyMediumItalic = TextStyle(
+>> "!file!" echo     fontSize: 14,
+>> "!file!" echo     fontWeight: FontWeight.w400,
+>> "!file!" echo     height: 20 / 14,
+>> "!file!" echo     letterSpacing: 0.25,
+>> "!file!" echo     fontStyle: FontStyle.italic,
+>> "!file!" echo   ^);
+>> "!file!" echo.
+>> "!file!" echo   static const TextStyle bodySmall = TextStyle(
+>> "!file!" echo     fontSize: 12,
+>> "!file!" echo     fontWeight: FontWeight.w400,
+>> "!file!" echo     height: 16 / 12,
+>> "!file!" echo     letterSpacing: 0.4,
+>> "!file!" echo   ^);
+>> "!file!" echo   static const TextStyle bodySmallItalic = TextStyle(
+>> "!file!" echo     fontSize: 12,
+>> "!file!" echo     fontWeight: FontWeight.w400,
+>> "!file!" echo     height: 16 / 12,
+>> "!file!" echo     letterSpacing: 0.4,
+>> "!file!" echo     fontStyle: FontStyle.italic,
+>> "!file!" echo   ^);
+>> "!file!" echo.
+>> "!file!" echo   // ───────────────────── Labels ─────────────────────
+>> "!file!" echo   static const TextStyle labelLarge = TextStyle(
+>> "!file!" echo     fontSize: 14,
+>> "!file!" echo     fontWeight: FontWeight.w700,
+>> "!file!" echo     height: 20 / 14,
+>> "!file!" echo     letterSpacing: 0.1,
+>> "!file!" echo   ^);
+>> "!file!" echo   static const TextStyle labelLargeItalic = TextStyle(
+>> "!file!" echo     fontSize: 14,
+>> "!file!" echo     fontWeight: FontWeight.w700,
+>> "!file!" echo     height: 20 / 14,
+>> "!file!" echo     letterSpacing: 0.1,
+>> "!file!" echo     fontStyle: FontStyle.italic,
+>> "!file!" echo   ^);
+>> "!file!" echo.
+>> "!file!" echo   static const TextStyle labelMedium = TextStyle(
+>> "!file!" echo     fontSize: 12,
+>> "!file!" echo     fontWeight: FontWeight.w600,
+>> "!file!" echo     height: 16 / 12,
+>> "!file!" echo     letterSpacing: 0.5,
+>> "!file!" echo   ^);
+>> "!file!" echo   static const TextStyle labelMediumItalic = TextStyle(
+>> "!file!" echo     fontSize: 12,
+>> "!file!" echo     fontWeight: FontWeight.w600,
+>> "!file!" echo     height: 16 / 12,
+>> "!file!" echo     letterSpacing: 0.5,
+>> "!file!" echo     fontStyle: FontStyle.italic,
+>> "!file!" echo   ^);
+>> "!file!" echo.
+>> "!file!" echo   static const TextStyle labelSmall = TextStyle(
+>> "!file!" echo     fontSize: 11,
+>> "!file!" echo     fontWeight: FontWeight.w600,
+>> "!file!" echo     height: 16 / 11,
+>> "!file!" echo     letterSpacing: 0.5,
+>> "!file!" echo   ^);
+>> "!file!" echo   static const TextStyle labelSmallItalic = TextStyle(
+>> "!file!" echo     fontSize: 11,
+>> "!file!" echo     fontWeight: FontWeight.w600,
+>> "!file!" echo     height: 16 / 11,
+>> "!file!" echo     letterSpacing: 0.5,
+>> "!file!" echo     fontStyle: FontStyle.italic,
+>> "!file!" echo   ^);
+>> "!file!" echo.
+>> "!file!" echo   // ───────────────────── Buttons ─────────────────────
+>> "!file!" echo   static const TextStyle buttonPrimary = TextStyle(
+>> "!file!" echo     fontSize: 14,
+>> "!file!" echo     fontWeight: FontWeight.w700,
+>> "!file!" echo     height: 20 / 14,
+>> "!file!" echo     letterSpacing: 0.75,
+>> "!file!" echo     color: Colors.white,
+>> "!file!" echo   ^);
+>> "!file!" echo   static const TextStyle buttonPrimaryItalic = TextStyle(
+>> "!file!" echo     fontSize: 14,
+>> "!file!" echo     fontWeight: FontWeight.w700,
+>> "!file!" echo     height: 20 / 14,
+>> "!file!" echo     letterSpacing: 0.75,
+>> "!file!" echo     color: Colors.white,
+>> "!file!" echo     fontStyle: FontStyle.italic,
+>> "!file!" echo   ^);
+>> "!file!" echo.
+>> "!file!" echo   static const TextStyle buttonSecondary = TextStyle(
+>> "!file!" echo     fontSize: 14,
+>> "!file!" echo     fontWeight: FontWeight.w600,
+>> "!file!" echo     height: 20 / 14,
+>> "!file!" echo     letterSpacing: 0.75,
+>> "!file!" echo   ^);
+>> "!file!" echo   static const TextStyle buttonSecondaryItalic = TextStyle(
+>> "!file!" echo     fontSize: 14,
+>> "!file!" echo     fontWeight: FontWeight.w600,
+>> "!file!" echo     height: 20 / 14,
+>> "!file!" echo     letterSpacing: 0.75,
+>> "!file!" echo     fontStyle: FontStyle.italic,
+>> "!file!" echo   ^);
+>> "!file!" echo.
+>> "!file!" echo   // ───────────────────── Captions ^& Overline ─────────────────────
+>> "!file!" echo   static const TextStyle caption = TextStyle(
+>> "!file!" echo     fontSize: 11,
+>> "!file!" echo     fontWeight: FontWeight.w400,
+>> "!file!" echo     height: 16 / 11,
+>> "!file!" echo     letterSpacing: 0.5,
+>> "!file!" echo     color: Colors.grey,
+>> "!file!" echo   ^);
+>> "!file!" echo }
 set "file=!repo_root!\lib\core\utils\app_key_store.dart"
 > "!file!" echo abstract final class AppKeyStore { static const themeMode = 'theme_mode'; static const onboardingAccepted = 'onboarding_accepted'; }
 set "file=!repo_root!\lib\core\routing\guards\onboarding_redirect.dart"

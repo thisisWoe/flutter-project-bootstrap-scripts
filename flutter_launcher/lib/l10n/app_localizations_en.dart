@@ -243,6 +243,31 @@ class AppLocalizationsEn extends AppLocalizations {
       'App display name must contain at least one visible character.';
 
   @override
+  String get homeOrganizationIdLabel => 'Organization ID';
+
+  @override
+  String get homeOrganizationIdHint => 'com.example';
+
+  @override
+  String get homeOrganizationIdHelper =>
+      'Required reverse-domain identifier used as the base for Android and Apple package identifiers.';
+
+  @override
+  String get homeOrganizationIdRequiredError => 'Organization ID is required.';
+
+  @override
+  String get homeOrganizationIdTooLongError =>
+      'Organization ID is too long. Use at most 120 characters.';
+
+  @override
+  String get homeOrganizationIdLeadingOrTrailingWhitespaceError =>
+      'Organization ID must not have leading or trailing spaces.';
+
+  @override
+  String get homeOrganizationIdInvalidFormatError =>
+      'Organization ID must use reverse-domain format, for example com.example or it.company.app.';
+
+  @override
   String get homeStepPlatformsTitle => 'Platforms';
 
   @override

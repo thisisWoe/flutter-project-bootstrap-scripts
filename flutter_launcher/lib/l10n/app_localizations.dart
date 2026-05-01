@@ -488,6 +488,48 @@ abstract class AppLocalizations {
   /// **'Il nome visualizzato dell\'app deve contenere almeno un carattere visibile.'**
   String get homeAppDisplayNameNoVisibleCharacterError;
 
+  /// No description provided for @homeOrganizationIdLabel.
+  ///
+  /// In it, this message translates to:
+  /// **'Organization ID'**
+  String get homeOrganizationIdLabel;
+
+  /// No description provided for @homeOrganizationIdHint.
+  ///
+  /// In it, this message translates to:
+  /// **'com.example'**
+  String get homeOrganizationIdHint;
+
+  /// No description provided for @homeOrganizationIdHelper.
+  ///
+  /// In it, this message translates to:
+  /// **'Identificatore reverse-domain obbligatorio usato come base per gli identificatori Android e Apple.'**
+  String get homeOrganizationIdHelper;
+
+  /// No description provided for @homeOrganizationIdRequiredError.
+  ///
+  /// In it, this message translates to:
+  /// **'L\'organization ID è obbligatorio.'**
+  String get homeOrganizationIdRequiredError;
+
+  /// No description provided for @homeOrganizationIdTooLongError.
+  ///
+  /// In it, this message translates to:
+  /// **'L\'organization ID è troppo lungo. Usa al massimo 120 caratteri.'**
+  String get homeOrganizationIdTooLongError;
+
+  /// No description provided for @homeOrganizationIdLeadingOrTrailingWhitespaceError.
+  ///
+  /// In it, this message translates to:
+  /// **'L\'organization ID non deve avere spazi iniziali o finali.'**
+  String get homeOrganizationIdLeadingOrTrailingWhitespaceError;
+
+  /// No description provided for @homeOrganizationIdInvalidFormatError.
+  ///
+  /// In it, this message translates to:
+  /// **'L\'organization ID deve usare il formato reverse-domain, per esempio com.example o it.company.app.'**
+  String get homeOrganizationIdInvalidFormatError;
+
   /// No description provided for @homeStepPlatformsTitle.
   ///
   /// In it, this message translates to:

@@ -62,7 +62,7 @@ class OnboardingPage extends StatelessWidget {
                   Flexible(
                     child: Text(
                       l10n.onboardingTitle,
-                      style: AppTextStyles.title,
+                      style: AppTextStyles.titleLarge,
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
